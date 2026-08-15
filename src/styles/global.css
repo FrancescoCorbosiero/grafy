@@ -1,0 +1,339 @@
+@import 'tailwindcss';
+
+/*
+ * Tema di Correspondentia Theatri: "strumento cartografico".
+ * Identità propria, indipendente dal soggetto dell'atlante e dai kit UI
+ * correnti: carta fredda con griglia a punti appena percettibile, spigoli
+ * quasi vivi, filetti sottili al posto delle ombre, un solo accento
+ * vermiglio, crocini di registro sugli elementi interattivi. Tipografia:
+ * Space Grotesk per la chrome, IBM Plex Mono per i metadati, EB Garamond
+ * per la prosa lunga (lettura, §7). Variante scura via [data-theme="dark"].
+ */
+:root {
+  --sfondo: #f3f2ed; /* carta */
+  --sfondo-rialzato: #fbfaf7;
+  --sfondo-incassato: #eae8e0;
+  --testo: #1c1d1a; /* inchiostro */
+  --testo-tenue: #5d5e57;
+  --accento: #b93a1e; /* vermiglio */
+  --accento-caldo: #8f6a13; /* ottone */
+  --bordo: #dcdad0;
+  --bordo-forte: #a9a798;
+  --focus: #b93a1e;
+  --punto-griglia: rgb(28 29 26 / 0.055);
+
+  --parte-1: #31639c;
+  --parte-2: #8c3a2e;
+  --parte-3: #6b2d5c;
+  --parte-4: #b08a3e;
+  --parte-5: #3e7a74;
+  --parte-6: #8b86af;
+}
+
+[data-theme='dark'] {
+  --sfondo: #111210;
+  --sfondo-rialzato: #191a17;
+  --sfondo-incassato: #22231f;
+  --testo: #ebeae3;
+  --testo-tenue: #a2a399;
+  --accento: #ff7a52;
+  --accento-caldo: #d3b05e;
+  --bordo: #2d2e29;
+  --bordo-forte: #4c4d45;
+  --focus: #ff7a52;
+  --punto-griglia: rgb(235 234 227 / 0.055);
+
+  --parte-1: #6f97c6;
+  --parte-2: #c47764;
+  --parte-3: #c78bb4;
+  --parte-4: #cfa95e;
+  --parte-5: #6fb0a8;
+  --parte-6: #9d99c0;
+}
+
+@theme inline {
+  --color-sfondo: var(--sfondo);
+  --color-rialzato: var(--sfondo-rialzato);
+  --color-incassato: var(--sfondo-incassato);
+  --color-testo: var(--testo);
+  --color-tenue: var(--testo-tenue);
+  --color-accento: var(--accento);
+  --color-oro: var(--accento-caldo);
+  --color-bordo: var(--bordo);
+  --color-bordo-forte: var(--bordo-forte);
+  --color-focus: var(--focus);
+  --color-parte-1: var(--parte-1);
+  --color-parte-2: var(--parte-2);
+  --color-parte-3: var(--parte-3);
+  --color-parte-4: var(--parte-4);
+  --color-parte-5: var(--parte-5);
+  --color-parte-6: var(--parte-6);
+
+  /* Spigoli quasi vivi ovunque, qualunque utility di raggio usino le pagine */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+
+  --font-serif: 'EB Garamond Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Space Grotesk Variable', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+html {
+  background-color: var(--sfondo);
+  color: var(--testo);
+  font-family: var(--font-sans);
+  scrollbar-gutter: stable;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100dvh;
+  /* Carta millimetrata: griglia a punti appena percettibile */
+  background-image: radial-gradient(circle, var(--punto-griglia) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Focus visibile ovunque (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accento) 22%, transparent);
+}
+
+/*
+ * Componenti del tema.
+ * .carta: superficie opaca a filetto sottile, niente ombre. Sugli elementi
+ * interattivi il filetto si rafforza e agli angoli opposti compaiono i
+ * crocini di registro in vermiglio, come su una tavola da stampa.
+ */
+.carta {
+  position: relative;
+  background: var(--sfondo-rialzato);
+  border: 1px solid var(--bordo);
+  border-radius: 2px;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
+}
+:where(a, button, [tabindex]).carta::before,
+:where(a, button, [tabindex]).carta::after {
+  content: '';
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+:where(a, button, [tabindex]).carta::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--accento);
+  border-left: 2px solid var(--accento);
+}
+:where(a, button, [tabindex]).carta::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--accento);
+  border-right: 2px solid var(--accento);
+}
+:where(a, button, [tabindex]).carta:hover {
+  border-color: var(--bordo-forte);
+}
+:where(a, button, [tabindex]).carta:hover::before,
+:where(a, button, [tabindex]).carta:hover::after {
+  opacity: 1;
+}
+
+/* Tessera del marchio: monogramma in negativo su inchiostro */
+.marchio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--testo);
+  color: var(--sfondo);
+  border-radius: 2px;
+  user-select: none;
+}
+
+/* Etichetta tecnica: metadati in mono maiuscoletto (date, tipi, conteggi) */
+.etichetta {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Suggerimento di tastiera (⌘K e simili) */
+.tasto {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--testo-tenue);
+  background: var(--sfondo-incassato);
+  border: 1px solid var(--bordo);
+  border-radius: 2px;
+  padding: 0.2rem 0.35rem;
+}
+
+/* Prosa lunga in serif, da edizione critica */
+.prosa {
+  font-family: var(--font-serif);
+  font-size: 1.14rem;
+  line-height: 1.72;
+  max-width: 42rem;
+}
+.prosa p {
+  margin-block: 0.9em;
+}
+.prosa p:first-child {
+  margin-top: 0;
+}
+.prosa h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  margin-top: 2.2em;
+  margin-bottom: 0.6em;
+  color: var(--accento);
+}
+.prosa h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 1.8em;
+  margin-bottom: 0.5em;
+}
+.prosa a {
+  color: var(--accento);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accento) 45%, transparent);
+  text-underline-offset: 2px;
+}
+.prosa a:hover {
+  text-decoration-color: var(--accento);
+}
+.prosa blockquote {
+  border-left: 3px solid var(--bordo-forte);
+  padding-left: 1rem;
+  margin-block: 1.2em;
+  color: var(--testo-tenue);
+}
+.prosa ul,
+.prosa ol {
+  padding-left: 1.4rem;
+  margin-block: 0.9em;
+}
+.prosa ul {
+  list-style: disc;
+}
+.prosa ol {
+  list-style: decimal;
+}
+.prosa li {
+  margin-block: 0.35em;
+}
+.prosa strong {
+  font-weight: 600;
+}
+.prosa hr {
+  border: none;
+  border-top: 1px solid var(--bordo);
+  margin-block: 2em;
+}
+.prosa table {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  margin-block: 1.2em;
+  display: block;
+  overflow-x: auto;
+}
+.prosa th,
+.prosa td {
+  border: 1px solid var(--bordo);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+.prosa th {
+  background: var(--sfondo-incassato);
+  font-weight: 600;
+}
+.prosa dl dt {
+  font-weight: 600;
+  margin-top: 0.9em;
+}
+.prosa dl dd {
+  margin-left: 1.2rem;
+  color: var(--testo);
+}
+
+/* Callout "nota" (dagli ambienti \begin{nota} del volume) */
+.nota {
+  border: 1px solid var(--bordo);
+  border-left: 3px solid var(--accento-caldo);
+  background: var(--sfondo-rialzato);
+  padding: 0.9rem 1.1rem;
+  margin-block: 1.4em;
+  border-radius: 2px;
+  font-size: 0.98em;
+}
+.nota .nota-titolo {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accento-caldo);
+  margin-bottom: 0.4em;
+}
+
+/* Avvertenza forte (tossicità, rischi): mai nascosta, mai footer */
+.avvertenza {
+  border: 1px solid color-mix(in srgb, #a04a3c 45%, var(--bordo));
+  border-left: 4px solid #a04a3c;
+  background: color-mix(in srgb, #a04a3c 7%, var(--sfondo-rialzato));
+  padding: 0.9rem 1.1rem;
+  margin-block: 1.4em;
+  border-radius: 2px;
+}
+
+/* Riduzione del movimento: nessuna transizione decorativa comunque,
+   ma qui azzeriamo anche quelle di stato per chi lo richiede */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link */
+.salta-al-contenuto {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--accento);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+}
+.salta-al-contenuto:focus {
+  left: 0;
+}

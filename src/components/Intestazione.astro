@@ -1,0 +1,89 @@
+---
+import { withBase } from '../lib/percorsi-url';
+
+const attuale = Astro.url.pathname;
+const vociMenu = [
+  { href: '/grafo', etichetta: 'Grafo' },
+  { href: '/cosmo', etichetta: 'Cosmo' },
+  { href: '/tempo', etichetta: 'Tempo' },
+  { href: '/simboli', etichetta: 'Simboli' },
+  { href: '/diagrammi', etichetta: 'Diagrammi' },
+  { href: '/percorsi', etichetta: 'Percorsi' },
+  { href: '/leggi', etichetta: 'Leggi' },
+  { href: '/blog', etichetta: 'Blog' },
+  { href: '/cerca', etichetta: 'Cerca' },
+];
+
+const eAttivo = (href: string) => attuale.startsWith(withBase(href));
+---
+
+<header class="border-b border-bordo bg-sfondo/90 backdrop-blur-sm sticky top-0 z-40">
+  <nav aria-label="Navigazione principale" class="mx-auto max-w-6xl px-4 flex items-center gap-5 h-14">
+    <a href={withBase('/')} class="group flex items-center gap-2.5 shrink-0">
+      <span class="marchio h-7 w-7 text-[0.68rem] font-bold tracking-tight" aria-hidden="true">CT</span>
+      <span class="font-semibold tracking-tight text-testo transition-colors duration-120 group-hover:text-accento max-sm:sr-only">
+        Correspondentia Theatri
+      </span>
+    </a>
+    <ul class="flex items-stretch gap-4 overflow-x-auto text-sm min-w-0 self-stretch">
+      {
+        vociMenu.map((v) => (
+          <li class="flex">
+            <a
+              href={withBase(v.href)}
+              aria-current={eAttivo(v.href) ? 'page' : undefined}
+              class:list={[
+                'flex items-center border-b-2 px-0.5 whitespace-nowrap transition-colors duration-120',
+                eAttivo(v.href)
+                  ? 'border-accento text-testo font-medium'
+                  : 'border-transparent text-tenue hover:text-testo',
+              ]}
+            >
+              {v.etichetta}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="ms-auto flex items-center gap-2 shrink-0">
+      <button
+        id="apri-ricerca"
+        type="button"
+        class="hidden sm:flex items-center gap-2 text-xs text-tenue bg-rialzato border border-bordo rounded-sm ps-2.5 pe-1.5 py-1.5 transition-colors duration-120 hover:border-bordo-forte hover:text-testo"
+        aria-label="Apri la ricerca rapida (Ctrl+K)"
+      >
+        <span>Cerca</span>
+        <kbd class="tasto" aria-hidden="true">⌘K</kbd>
+      </button>
+      <button
+        id="commuta-tema"
+        type="button"
+        class="text-tenue border border-transparent rounded-sm p-2 transition-colors duration-120 hover:border-bordo hover:bg-rialzato hover:text-testo"
+        aria-label="Attiva o disattiva il tema scuro"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+        </svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const bottone = document.getElementById('commuta-tema');
+  bottone?.addEventListener('click', () => {
+    const radice = document.documentElement;
+    const scuro = radice.dataset.theme === 'dark';
+    if (scuro) {
+      delete radice.dataset.theme;
+      try {
+        localStorage.setItem('correspondentia-tema', 'light');
+      } catch {}
+    } else {
+      radice.dataset.theme = 'dark';
+      try {
+        localStorage.setItem('correspondentia-tema', 'dark');
+      } catch {}
+    }
+  });
+</script>
