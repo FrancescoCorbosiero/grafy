@@ -1,7 +1,7 @@
 # Prompt · Costruisci un atlante Correspondentia da un seme
 
 > **Come usarlo.** Apri una sessione di Claude Code su una copia di questo
-> repository (template/fork di `correspondentia-theatri`), metti il seme in
+> repository (una copia della fabbrica — questo repository), metti il seme in
 > `kit/seme.json` (o allegalo al prompt chiedendo di salvarlo lì), e incolla
 > questo file. Tutto ciò che segue è rivolto a Claude Code.
 

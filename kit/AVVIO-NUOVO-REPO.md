@@ -1,24 +1,17 @@
 # Avvio · il repo-fabbrica Correspondentia
 
-Hai in mano l'archivio del **repo-fabbrica**: motore del sito (Astro + pipeline
+Questo repository è il **repo-fabbrica**: motore del sito (Astro + pipeline
 dati + viste + test + CI), kit di replica (`kit/`) e semi pronti (`kit/semi/`).
 Da questo repository si generano gli atlanti sui vari argomenti-nodo.
 
-## 1 · Metti la fabbrica su un repo
+## 1 · Verifica la fabbrica
 
-```bash
-# in una cartella vuota
-unzip correspondentia-fabbrica.zip
-git init && git add -A && git commit -m "Fabbrica Correspondentia"
-git remote add origin <url-del-tuo-repo>
-git push -u origin main
-```
-
-Poi verifica che giri (l'istanza di riferimento, l'esoterismo, funziona subito):
+Clona questo repository e verifica che giri (l'istanza di riferimento,
+l'esoterismo, funziona subito):
 
 ```bash
 npm ci
-npm run dev        # → http://localhost:4321/correspondentia-theatri/
+npm run dev        # → http://localhost:4321/grafy/
 npm test           # 28 test verdi
 ```
 

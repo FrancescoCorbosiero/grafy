@@ -1,4 +1,17 @@
-# Correspondentia Theatri
+# Grafy — la fabbrica Correspondentia
+
+Il repository da cui si generano **atlanti ipermediali a grafo** su qualunque
+argomento-nodo: motore (Astro + pipeline dati + viste + test + CI), **kit di
+replica** (`kit/`: prompt, schema del seme, validatore, semi pronti) e
+un'istanza di riferimento completa che tiene la fabbrica verificabile.
+
+- Per usare la fabbrica: **[`kit/AVVIO-NUOVO-REPO.md`](kit/AVVIO-NUOVO-REPO.md)**
+- Il flusso argomento → seme → sito: **[`kit/LEGGIMI.md`](kit/LEGGIMI.md)**
+- Semi pronti in `kit/semi/` (informatica — «Calculemus», 170 voci validate)
+
+---
+
+## L'istanza di riferimento: Correspondentia Theatri
 
 Atlante ipermediale dell'esoterismo occidentale: un volume di studio (in `contenuti/`)
 smontato in **234 voci collegate a grafo** — correnti, concetti, pratiche, simboli, persone,
@@ -74,7 +87,7 @@ le regole redazionali in `docs/guida-di-stile.md`. Il brief completo è `BRIEF.m
 
 GitHub Pages via Actions (`.github/workflows/deploy.yml`, attivo sul ramo `main`):
 in **Settings → Pages** impostare *Source: GitHub Actions*. Il sito è configurato per
-`https://francescocorbosiero.github.io/correspondentia-theatri/` (base path in
+`https://francescocorbosiero.github.io/grafy/` (base path in
 `astro.config.mjs`). La CI (`ci.yml`) esegue test unitari, build, budget bundle ed e2e.
 
 ## Replica per altri argomenti

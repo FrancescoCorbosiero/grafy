@@ -15,7 +15,7 @@ export default defineConfig({
   use: {
     // slash finale obbligatorio: i goto() nei test usano percorsi relativi
     // ("grafo", "voce/ficino") perché "/x" risolverebbe alla radice del dominio
-    baseURL: 'http://localhost:4321/correspondentia-theatri/',
+    baseURL: 'http://localhost:4321/grafy/',
     trace: 'retain-on-failure',
     ...(process.env.PLAYWRIGHT_EXECUTABLE
       ? { launchOptions: { executablePath: process.env.PLAYWRIGHT_EXECUTABLE } }
@@ -24,7 +24,7 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npx astro preview --port 4321',
-    url: 'http://localhost:4321/correspondentia-theatri/',
+    url: 'http://localhost:4321/grafy/',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

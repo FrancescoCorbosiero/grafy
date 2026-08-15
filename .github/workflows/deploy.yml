@@ -1,7 +1,7 @@
 name: Deploy su GitHub Pages
 
 # Per attivarlo: Settings → Pages → Source: "GitHub Actions".
-# Il sito è configurato per https://francescocorbosiero.github.io/correspondentia-theatri/
+# Il sito è configurato per https://francescocorbosiero.github.io/grafy/
 on:
   push:
     branches: ['main']
