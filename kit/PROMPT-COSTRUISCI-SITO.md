@@ -56,9 +56,12 @@ posizione in `src/lib/palette.ts`).
 
 1. **Svuota** `src/content/voci/`, `src/content/percorsi/`,
    `src/content/blog/`, `contenuti/` e le pagine di `src/pages/diagrammi/`
-   (tranne `index.astro`). Adatta o svuota anche le pagine legate a tipi
-   dell'istanza di riferimento (`src/pages/simboli.astro`, l'atlante dei
-   simboli) se il tuo seme non ha un tipo corrispondente.
+   (tranne `index.astro`). Elimina anche `scripts/scaffold/` (gli script
+   usa-e-getta con cui fu generato l'inventario di riferimento: dichiarano
+   la sua tassonomia e coi tuoi tipi non compilano più). Adatta o svuota le
+   pagine legate a tipi dell'istanza di riferimento
+   (`src/pages/simboli.astro`, l'atlante dei simboli) se il tuo seme non ha
+   un tipo corrispondente.
 2. **Genera le voci** da `kit/seme.json`: una `.md` per voce con frontmatter
    completo (id, titolo, tipo, parte, peso, sommario, periodo, alias, luoghi,
    archi, fonti) e un **corpo breve provvisorio** (2–4 frasi dal sommario +

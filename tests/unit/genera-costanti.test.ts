@@ -23,8 +23,27 @@ import {
 const RADICE = join(__dirname, '../..');
 const leggiSeme = (percorso: string) => JSON.parse(readFileSync(join(RADICE, percorso), 'utf8'));
 
-describe('codegen sul seme di riferimento (kit/seme.json)', () => {
-  const c = derivaCostanti(leggiSeme('kit/seme.json'));
+const semeProgetto = leggiSeme('kit/seme.json');
+// nella fabbrica kit/seme.json È il seme di riferimento e l'equivalenza
+// storica va garantita in CI; in un'istanza il seme è un altro per
+// definizione e il caso si disattiva da sé (resta quello sull'informatica)
+const eIlRiferimento = semeProgetto?.progetto?.nome === 'Correspondentia Theatri';
+
+describe('il seme del progetto (kit/seme.json) è utilizzabile dal codegen', () => {
+  it('deriva costanti coerenti col contratto del motore', () => {
+    const c = derivaCostanti(semeProgetto);
+    expect(c.tipiNodo[0]).toBe('parte');
+    expect(c.tipiNodo.length).toBeGreaterThanOrEqual(4);
+    expect(c.tipiArco.length).toBeGreaterThanOrEqual(4);
+    expect(c.archiDerivati.length).toBeGreaterThanOrEqual(1);
+    expect(c.nParti).toBeGreaterThanOrEqual(2);
+    expect(Object.keys(c.nomiParte)).toHaveLength(c.nParti);
+    expect(Object.keys(c.nomiParteBrevi)).toHaveLength(c.nParti);
+  });
+});
+
+describe.runIf(eIlRiferimento)('codegen sul seme di riferimento (kit/seme.json)', () => {
+  const c = derivaCostanti(semeProgetto);
 
   it('riproduce le costanti storiche del motore, valore per valore', () => {
     expect(c.tipiNodo).toEqual([
