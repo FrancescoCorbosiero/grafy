@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import EgoGraph from '../../components/islands/EgoGraph';
+import StudioVoce from '../../components/islands/StudioVoce';
 import grafo from '../../generated/graph.json';
 import type { ArcoGrafo, DatiGrafo, NodoGrafo } from '../../lib/tipi-grafo';
 import { formattaPeriodo, withBase } from '../../lib/percorsi-url';
@@ -116,9 +117,11 @@ const gruppi = (mappa: Map<TipoArco, ArcoGrafo[]>) =>
           </section>
         )
       }
+      <div id="fine-corpo-voce" aria-hidden="true"></div>
     </div>
 
     <aside class="min-w-0 space-y-6" aria-label="Relazioni e voci vicine">
+      <StudioVoce id={nodo.id} client:load />
       <EgoGraph centro={nodo.id} client:visible />
 
       <section aria-labelledby="titolo-relazioni">

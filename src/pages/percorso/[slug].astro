@@ -34,7 +34,12 @@ const { Content } = await render(percorso);
     </header>
 
     <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <ol class="space-y-10 max-w-2xl" id="tappe-percorso">
+      <ol
+        class="space-y-10 max-w-2xl"
+        id="tappe-percorso"
+        data-percorso={percorso.data.slug}
+        data-totale={String(tappe.length)}
+      >
         {
           tappe.map((tappa, i) => {
             const nodo = perId.get(tappa.voce)!;
@@ -76,3 +81,27 @@ const { Content } = await render(percorso);
     </nav>
   </div>
 </Base>
+
+<script>
+  // Registro di studio: l'ultima tappa raggiunta scorrendo il percorso
+  // (consultabile in /studio, condiviso fra le tab dello stesso browser).
+  import { registraTappaPercorso } from '../../lib/studio';
+
+  const lista = document.getElementById('tappe-percorso');
+  if (lista?.dataset.percorso) {
+    const slug = lista.dataset.percorso;
+    const totale = Number(lista.dataset.totale ?? '0');
+    const tappe = Array.from(lista.querySelectorAll<HTMLElement>('.tappa-percorso'));
+    const osservatore = new IntersectionObserver(
+      (visibili) => {
+        for (const vista of visibili) {
+          if (!vista.isIntersecting) continue;
+          const indice = tappe.indexOf(vista.target as HTMLElement);
+          if (indice >= 0) registraTappaPercorso(slug, indice + 1, totale);
+        }
+      },
+      { rootMargin: '0px 0px -55% 0px' }
+    );
+    for (const tappa of tappe) osservatore.observe(tappa);
+  }
+</script>

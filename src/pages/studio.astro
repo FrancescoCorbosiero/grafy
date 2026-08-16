@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import StudioView from '../components/islands/StudioView';
+import { withBase } from '../lib/percorsi-url';
+
+/**
+ * /studio — la consultazione del registro locale di apprendimento: che cosa
+ * hai consultato, assimilato o segnato da ripassare, dove sei nei percorsi
+ * e nel volume, e i prossimi passi. Il fine dell'atlante è l'assorbimento
+ * organizzato di un campo: questa pagina è il suo specchio.
+ */
+const percorsi = (await getCollection('percorsi'))
+  .sort((a, b) => a.data.ordine - b.data.ordine)
+  .map((p) => ({ slug: p.data.slug, titolo: p.data.titolo, tappe: p.data.tappe.length }));
+const capitoli = (await getCollection('capitoli'))
+  .sort((a, b) => a.data.ordine - b.data.ordine)
+  .map((c) => ({ id: c.id, titolo: c.data.titolo }));
+---
+
+<Base
+  titolo="I tuoi progressi"
+  descrizione="Il registro locale del tuo studio dell'atlante: copertura per parte e per peso, voci assimilate e da ripassare, percorsi, volume e prossimi passi. Tutto resta nel tuo browser."
+>
+  <div class="mx-auto max-w-4xl px-4 py-10">
+    <h1 class="font-serif text-3xl">I tuoi progressi</h1>
+    <p class="mt-2 max-w-2xl text-sm" style="color: var(--testo-tenue)">
+      L’atlante si studia da più porte — grafo, relazioni, tempo, percorsi, volume — e anche da
+      più tab insieme: qui i fili si riannodano. Consultazioni, autovalutazioni («assimilata»,
+      «da ripassare»), avanzamento nei percorsi e nel volume, con i passi consigliati per coprire
+      il campo in modo ordinato.
+    </p>
+
+    <noscript>
+      <p class="mt-6 rounded border border-bordo bg-rialzato p-4 text-sm">
+        Il registro di studio vive nel browser e ha bisogno di JavaScript. Senza, l’atlante resta
+        interamente consultabile: l’<a class="underline text-accento" href={withBase('/grafo/elenco')}>elenco
+        delle voci</a> e il <a class="underline text-accento" href={withBase('/leggi')}>volume</a> non
+        richiedono alcun registro.
+      </p>
+    </noscript>
+
+    <StudioView percorsi={percorsi} capitoli={capitoli} client:load />
+  </div>
+</Base>
