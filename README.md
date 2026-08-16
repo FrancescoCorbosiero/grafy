@@ -39,6 +39,7 @@ perché l'attribuzione non regge.
 | `/diagrammi` | Albero sefirotico, fasi dell'opera, tre mondi di Agrippa, ruota delle corrispondenze |
 | `/leggi` | Il volume lineare, capitolo per capitolo, con progressione di lettura |
 | `/cerca` | Full-text FlexSearch; palette globale con `Ctrl/Cmd+K` |
+| `/studio` | Il registro locale dell'apprendimento: copertura per parte e per peso, autovalutazioni («assimilata»/«da ripassare»), percorsi e volume, prossimi passi — nel browser, sincronizzato fra le tab |
 
 ## Architettura dei dati (fonte unica)
 
@@ -88,6 +89,11 @@ le regole redazionali in `docs/guida-di-stile.md`. Il brief completo è `BRIEF.m
   self-hosted, indici pre-generati).
 - **Contenuti**: piano descrittivo e piano fattuale sempre distinti; datazione reale vs
   dichiarata per le pseudoepigrafe; le pratiche sono descritte, mai istruite.
+- **Apprendimento**: il fine è l'assorbimento organizzato del campo — il registro di studio
+  (`/studio`, `src/lib/studio.ts`) traccia consultazioni, letture e autovalutazioni per voce,
+  percorso e capitolo, tutto in `localStorage` (niente account né server), condiviso e
+  sincronizzato dal vivo fra le tab dello stesso browser; la navigazione è raggruppata per
+  gesto (Esplora / Studia) con menu `<details>` che funzionano anche senza JavaScript.
 
 ## Deploy
 

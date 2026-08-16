@@ -3,8 +3,9 @@
 Questo sito (Correspondentia Theatri, esoterismo occidentale) è un'istanza di
 un motore riutilizzabile: **atlante ipermediale a grafo** con voci tipizzate,
 relazioni tipizzate a doppio registro (documentato / dichiarato), timeline,
-percorsi narrati, volume lineare, ricerca, blog. Il kit serve a replicarlo su
-un altro argomento in tre passi.
+percorsi narrati, volume lineare, ricerca, blog e registro di studio locale
+(/studio: il lettore traccia e consulta il proprio apprendimento). Il kit
+serve a replicarlo su un altro argomento in tre passi.
 
 ## Il flusso
 

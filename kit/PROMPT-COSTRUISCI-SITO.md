@@ -7,8 +7,9 @@
 
 Questo repository è il **motore** di un atlante ipermediale a grafo: pipeline
 dati con validazione Zod, viste (grafo 2D, relazioni testuali, timeline, percorsi,
-volume lineare, ricerca, atlante dei simboli, blog), tema "strumento
-cartografico", test unitari ed e2e, CI e deploy su GitHub Pages. Il contenuto
+volume lineare, ricerca, atlante dei simboli, blog, registro di studio locale
+in /studio), tema "strumento cartografico", test unitari ed e2e, CI e deploy
+su GitHub Pages. Il contenuto
 attuale (esoterismo occidentale) è **il caso di riferimento da sostituire**
 con quello del seme. La UX non si tocca; cambia ciò che il seme dichiara.
 

@@ -1,45 +1,103 @@
 ---
 import { withBase } from '../lib/percorsi-url';
+import { TIPI_NODO } from '../lib/costanti';
 
+/**
+ * Navigazione principale, raggruppata per gesto invece che piatta: Esplora
+ * (le viste del grafo), Studia (percorsi, volume, progressi), più Blog e
+ * Cerca. I menu sono <details>: funzionano senza JavaScript e da tastiera;
+ * lo script sotto aggiunge solo le cortesie (uno aperto alla volta, chiusura
+ * con Escape o con un click fuori). Le viste legate a tipi del seme
+ * compaiono solo se l'istanza le ha davvero (Simboli, Diagrammi).
+ */
 const attuale = Astro.url.pathname;
-const vociMenu = [
+
+const haSimboli = (TIPI_NODO as readonly string[]).includes('simbolo');
+const pagineDiagrammi = Object.keys(import.meta.glob('../pages/diagrammi/*.astro'));
+const haDiagrammi = pagineDiagrammi.some((p) => !p.endsWith('/index.astro'));
+
+interface VoceMenu {
+  href: string;
+  etichetta: string;
+  /** prefissi aggiuntivi che rendono attiva la voce (es. /percorso/<slug>) */
+  anche?: string[];
+}
+
+const esplora: VoceMenu[] = [
   { href: '/grafo', etichetta: 'Grafo' },
   { href: '/relazioni', etichetta: 'Relazioni' },
   { href: '/tempo', etichetta: 'Tempo' },
-  { href: '/simboli', etichetta: 'Simboli' },
-  { href: '/diagrammi', etichetta: 'Diagrammi' },
-  { href: '/percorsi', etichetta: 'Percorsi' },
-  { href: '/leggi', etichetta: 'Leggi' },
+  ...(haSimboli ? [{ href: '/simboli', etichetta: 'Simboli' }] : []),
+  ...(haDiagrammi ? [{ href: '/diagrammi', etichetta: 'Diagrammi' }] : []),
+];
+const studia: VoceMenu[] = [
+  { href: '/percorsi', etichetta: 'Percorsi d’autore', anche: ['/percorso/'] },
+  { href: '/leggi', etichetta: 'Leggi il volume' },
+  { href: '/studio', etichetta: 'I tuoi progressi' },
+];
+const dirette: VoceMenu[] = [
   { href: '/blog', etichetta: 'Blog' },
   { href: '/cerca', etichetta: 'Cerca' },
 ];
 
-const eAttivo = (href: string) => attuale.startsWith(withBase(href));
+const eAttivo = (voce: VoceMenu) =>
+  [voce.href, ...(voce.anche ?? [])].some((prefisso) => attuale.startsWith(withBase(prefisso)));
+const gruppoAttivo = (voci: VoceMenu[]) => voci.some(eAttivo);
+
+const stileScheda = (attivo: boolean) =>
+  [
+    'flex items-center gap-1 border-b-2 px-0.5 whitespace-nowrap transition-colors duration-120',
+    attivo ? 'border-accento text-testo font-medium' : 'border-transparent text-tenue hover:text-testo',
+  ].join(' ');
 ---
 
 <header class="border-b border-bordo bg-sfondo/90 backdrop-blur-sm sticky top-0 z-40">
-  <nav aria-label="Navigazione principale" class="mx-auto max-w-6xl px-4 flex items-center gap-5 h-14">
+  <nav aria-label="Navigazione principale" class="mx-auto max-w-6xl px-4 flex items-center gap-4 sm:gap-5 h-14">
     <a href={withBase('/')} class="group flex items-center gap-2.5 shrink-0">
       <span class="marchio h-7 w-7 text-[0.68rem] font-bold tracking-tight" aria-hidden="true">CT</span>
       <span class="font-semibold tracking-tight text-testo transition-colors duration-120 group-hover:text-accento max-sm:sr-only">
         Correspondentia Theatri
       </span>
     </a>
-    <ul class="flex items-stretch gap-4 overflow-x-auto text-sm min-w-0 self-stretch">
+    <ul class="flex items-stretch gap-3 sm:gap-4 text-sm min-w-0 self-stretch">
       {
-        vociMenu.map((v) => (
+        [
+          { etichetta: 'Esplora', voci: esplora },
+          { etichetta: 'Studia', voci: studia },
+        ].map((gruppo) => (
           <li class="flex">
-            <a
-              href={withBase(v.href)}
-              aria-current={eAttivo(v.href) ? 'page' : undefined}
-              class:list={[
-                'flex items-center border-b-2 px-0.5 whitespace-nowrap transition-colors duration-120',
-                eAttivo(v.href)
-                  ? 'border-accento text-testo font-medium'
-                  : 'border-transparent text-tenue hover:text-testo',
-              ]}
-            >
-              {v.etichetta}
+            <details class="gruppo-nav">
+              <summary class={stileScheda(gruppoAttivo(gruppo.voci))}>
+                {gruppo.etichetta}
+                <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" class="freccia-nav mt-px">
+                  <path d="M1 3 L5 7 L9 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </summary>
+              <ul class="pannello-nav">
+                {gruppo.voci.map((voce) => (
+                  <li>
+                    <a
+                      href={withBase(voce.href)}
+                      aria-current={eAttivo(voce) ? 'page' : undefined}
+                      class:list={[
+                        'block px-3 py-1.5 whitespace-nowrap transition-colors duration-120 hover:bg-incassato',
+                        eAttivo(voce) ? 'text-accento font-medium' : 'text-testo',
+                      ]}
+                    >
+                      {voce.etichetta}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </li>
+        ))
+      }
+      {
+        dirette.map((voce) => (
+          <li class="flex">
+            <a href={withBase(voce.href)} aria-current={eAttivo(voce) ? 'page' : undefined} class={stileScheda(eAttivo(voce))}>
+              {voce.etichetta}
             </a>
           </li>
         ))
@@ -69,7 +127,66 @@ const eAttivo = (href: string) => attuale.startsWith(withBase(href));
   </nav>
 </header>
 
+<style>
+  .gruppo-nav {
+    position: relative;
+    display: flex;
+  }
+  .gruppo-nav > summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  .gruppo-nav > summary::-webkit-details-marker {
+    display: none;
+  }
+  .freccia-nav {
+    transition: transform 120ms ease;
+  }
+  .gruppo-nav[open] .freccia-nav {
+    transform: rotate(180deg);
+  }
+  .gruppo-nav[open] > summary {
+    color: var(--testo);
+  }
+  .pannello-nav {
+    position: absolute;
+    top: calc(100% + 1px);
+    inset-inline-start: 0;
+    min-width: 11rem;
+    padding-block: 0.35rem;
+    background: var(--sfondo-rialzato);
+    border: 1px solid var(--bordo);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 var(--bordo);
+    z-index: 50;
+  }
+</style>
+
 <script>
+  // Cortesie dei menu (il funzionamento di base è nativo di <details>):
+  // uno aperto alla volta, chiusura con Escape o con un click fuori.
+  const gruppi = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.gruppo-nav'));
+  for (const gruppo of gruppi) {
+    gruppo.addEventListener('toggle', () => {
+      if (gruppo.open) for (const altro of gruppi) if (altro !== gruppo) altro.open = false;
+    });
+  }
+  document.addEventListener('click', (evento) => {
+    for (const gruppo of gruppi) {
+      if (gruppo.open && evento.target instanceof Node && !gruppo.contains(evento.target)) gruppo.open = false;
+    }
+  });
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key !== 'Escape') return;
+    for (const gruppo of gruppi) {
+      if (gruppo.open) {
+        gruppo.open = false;
+        gruppo.querySelector('summary')?.focus();
+      }
+    }
+  });
+
   const bottone = document.getElementById('commuta-tema');
   bottone?.addEventListener('click', () => {
     const radice = document.documentElement;
