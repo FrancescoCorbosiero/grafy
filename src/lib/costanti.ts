@@ -1,59 +1,29 @@
 /**
- * Costanti dei tipi di nodo e arco (§3 del BRIEF), senza dipendenze:
- * importabili dal client senza trascinare Zod. Gli schemi di validazione
- * vivono in schema.ts (lato build) e riesportano da qui.
+ * Tassonomia del progetto, senza dipendenze: importabile dal client senza
+ * trascinare Zod. I valori NON vivono più qui: sono GENERATI da kit/seme.json
+ * (scripts/genera-costanti.ts, primo passo di `npm run data`) e questo modulo
+ * li ri-esporta, così nessun import esistente cambia percorso. Qui restano
+ * solo i derivati statici di comodo. Gli schemi di validazione vivono in
+ * schema.ts (lato build) e riesportano da qui.
  */
+export * from '../generated/costanti';
 
-export const TIPI_NODO = [
-  'parte',
-  'corrente',
-  'concetto',
-  'pratica',
-  'simbolo',
-  'persona',
-  'opera',
-  'evento',
-  'luogo',
-] as const;
+import { ARCHI_DERIVATI, N_PARTI, TIPI_LEGGENDARI } from '../generated/costanti';
 
-export type TipoNodo = (typeof TIPI_NODO)[number];
+/**
+ * Il tipo dell'arco di contenimento parte→voce che la pipeline deriva dal
+ * campo `parte`: per convenzione il primo di ARCHI_DERIVATI (il codegen
+ * esige che il seme ne dichiari almeno uno).
+ */
+export const ARCO_CONTENIMENTO = ARCHI_DERIVATI[0];
 
-export const TIPI_ARCO = [
-  'influenza',
-  'deriva_da',
-  'si_oppone_a',
-  'usa_simbolo',
-  'pratica',
-  'elabora',
-  'rilegge',
-  'contiene',
-  'contemporaneo_di',
-  'attribuzione_infondata',
-] as const;
+/** true se il tipo è un arco derivato dalla pipeline (mai dichiarato a mano). */
+export const arcoDerivato = (tipo: string): boolean =>
+  (ARCHI_DERIVATI as readonly string[]).includes(tipo);
 
-export type TipoArco = (typeof TIPI_ARCO)[number];
+/** true se il tipo è un arco leggendario (doppio registro, spento di default). */
+export const arcoLeggendario = (tipo: string): boolean =>
+  (TIPI_LEGGENDARI as readonly string[]).includes(tipo);
 
-export const ETICHETTE_TIPO_NODO: Record<TipoNodo, string> = {
-  parte: 'Parte',
-  corrente: 'Corrente',
-  concetto: 'Concetto',
-  pratica: 'Pratica',
-  simbolo: 'Simbolo',
-  persona: 'Persona',
-  opera: 'Opera',
-  evento: 'Evento',
-  luogo: 'Luogo',
-};
-
-export const ETICHETTE_TIPO_ARCO: Record<TipoArco, string> = {
-  influenza: 'influenza',
-  deriva_da: 'deriva da',
-  si_oppone_a: 'si oppone a',
-  usa_simbolo: 'usa il simbolo',
-  pratica: 'pratica',
-  elabora: 'elabora',
-  rilegge: 'rilegge',
-  contiene: 'contiene',
-  contemporaneo_di: 'contemporaneo di',
-  attribuzione_infondata: 'attribuzione infondata',
-};
+/** I numeri di parte, [1..N_PARTI]. */
+export const NUMERI_PARTE: readonly number[] = Array.from({ length: N_PARTI }, (_, i) => i + 1);

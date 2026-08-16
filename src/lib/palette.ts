@@ -1,12 +1,19 @@
 /**
- * Palette di Correspondentia Theatri (§7 del BRIEF).
+ * Palette del motore (§7 del BRIEF).
  *
- * I sei colori delle parti sono tinte desaturate scelte per restare
- * distinguibili anche in deuteranopia: la garanzia non è "a occhio" ma
- * verificata da tests/unit/palette-deuteranopia.test.ts, che simula la
- * visione deutan (matrici di Machado et al. 2009) e impone una distanza
- * percettiva minima fra tutte le coppie.
+ * I colori delle parti vengono dai set pre-validati di palette-parti.ts
+ * (4–8 parti, tema chiaro e scuro), scelti in base a N_PARTI del seme.
+ * La distinguibilità non è garantita "a occhio" ma da
+ * tests/unit/palette-deuteranopia.test.ts, che simula la visione deutan
+ * (matrici di Machado et al. 2009) e impone una distanza percettiva minima
+ * su ogni set. I colori degli archi sono assegnati per posizione ai tipi
+ * del seme, con tinte dedicate agli archi derivati e leggendari.
  */
+import { N_PARTI, TIPI_ARCO, arcoDerivato, arcoLeggendario } from './costanti';
+import { coloriPerParti } from './palette-parti';
+
+export { NOMI_PARTE, NOMI_PARTE_BREVI } from './costanti';
+export { PALETTE_PARTI, SFONDO_SCURO, coloriPerParti } from './palette-parti';
 
 export const COLORI_BASE = {
   pergamena: '#F7F4EE',
@@ -15,47 +22,53 @@ export const COLORI_BASE = {
   oro: '#8A6A2F',
 } as const;
 
-/** Colore di cluster per parte (1-6). */
-export const COLORI_PARTE: Record<number, string> = {
-  1: '#31639C', // I — Definizione ed epistemologia: blu ardesia
-  2: '#8C3A2E', // II — Correnti storiche: ruggine
-  3: '#6B2D5C', // III — Concetti strutturali: porpora (accento del sito)
-  4: '#B08A3E', // IV — Pratiche e vie: oro chiaro
-  5: '#3E7A74', // V — Linguaggio simbolico: verde-azzurro
-  6: '#8B86AF', // VI — Ricezioni moderne: grigio-violetto chiaro
-};
+const SET_PARTI = coloriPerParti(N_PARTI);
 
-export const NOMI_PARTE: Record<number, string> = {
-  1: 'I · Definizione ed epistemologia',
-  2: 'II · Correnti storiche',
-  3: 'III · Concetti strutturali',
-  4: 'IV · Pratiche e vie',
-  5: 'V · Linguaggio simbolico',
-  6: 'VI · Ricezioni moderne',
-};
+/** Colore di cluster per parte (1..N_PARTI), tema chiaro. */
+export const COLORI_PARTE: Record<number, string> = Object.fromEntries(
+  SET_PARTI.chiaro.map((colore, i) => [i + 1, colore])
+);
 
-export const NOMI_PARTE_BREVI: Record<number, string> = {
-  1: 'Definizione',
-  2: 'Correnti',
-  3: 'Concetti',
-  4: 'Pratiche',
-  5: 'Simboli',
-  6: 'Ricezioni',
-};
+/** Colore di cluster per parte (1..N_PARTI), tema scuro (variabili CSS generate). */
+export const COLORI_PARTE_SCURO: Record<number, string> = Object.fromEntries(
+  SET_PARTI.scuro.map((colore, i) => [i + 1, colore])
+);
 
-/** Colori degli archi per tipo (tema chiaro). */
-export const COLORI_ARCO: Record<string, string> = {
-  influenza: '#7A7466',
-  deriva_da: '#5B7A99',
-  si_oppone_a: '#A04A3C',
-  usa_simbolo: '#3E7A74',
-  pratica: '#B08A3E',
-  elabora: '#6B2D5C',
-  rilegge: '#6E6A8F',
-  contiene: '#C9C2B2',
-  contemporaneo_di: '#B9B2A0',
-  attribuzione_infondata: '#B3475F',
-};
+/**
+ * Colori degli archi per tipo (tema chiaro): i tipi documentati pescano in
+ * ordine dal ciclo di tinte; i derivati e i leggendari hanno tinte proprie
+ * (tratteggio leggendario compreso). Con più di otto tipi documentati il
+ * ciclo ricomincia.
+ */
+const CICLO_COLORI_ARCO = [
+  '#7A7466',
+  '#5B7A99',
+  '#A04A3C',
+  '#3E7A74',
+  '#B08A3E',
+  '#6B2D5C',
+  '#6E6A8F',
+  '#B9B2A0',
+] as const;
+
+export const COLORE_ARCO_DERIVATO = '#C9C2B2';
+export const COLORE_ARCO_LEGGENDARIO = '#B3475F';
+
+export const COLORI_ARCO: Record<string, string> = (() => {
+  const colori: Record<string, string> = {};
+  let posizione = 0;
+  for (const tipo of TIPI_ARCO) {
+    if (arcoDerivato(tipo)) colori[tipo] = COLORE_ARCO_DERIVATO;
+    else if (arcoLeggendario(tipo)) colori[tipo] = COLORE_ARCO_LEGGENDARIO;
+    else colori[tipo] = CICLO_COLORI_ARCO[posizione++ % CICLO_COLORI_ARCO.length]!;
+  }
+  return colori;
+})();
+
+/** Il colore d'arco per tipo, con ripiego sicuro per tipi fuori tassonomia. */
+export function coloreArco(tipo: string): string {
+  return COLORI_ARCO[tipo] ?? (arcoLeggendario(tipo) ? COLORE_ARCO_LEGGENDARIO : CICLO_COLORI_ARCO[0]);
+}
 
 /** Conversioni colore minime (senza dipendenze). */
 export function hexARgb(hex: string): [number, number, number] {

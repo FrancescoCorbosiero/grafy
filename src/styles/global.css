@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* Colori delle parti (--parte-*, --color-parte-*): GENERATI da kit/seme.json
+   in src/generated/parti.css (npm run data, scripts/genera-costanti.ts). */
+@import '../generated/parti.css';
 
 /*
  * Tema di Correspondentia Theatri: "strumento cartografico".
@@ -21,13 +24,6 @@
   --bordo-forte: #a9a798;
   --focus: #b93a1e;
   --punto-griglia: rgb(28 29 26 / 0.055);
-
-  --parte-1: #31639c;
-  --parte-2: #8c3a2e;
-  --parte-3: #6b2d5c;
-  --parte-4: #b08a3e;
-  --parte-5: #3e7a74;
-  --parte-6: #8b86af;
 }
 
 [data-theme='dark'] {
@@ -42,13 +38,6 @@
   --bordo-forte: #4c4d45;
   --focus: #ff7a52;
   --punto-griglia: rgb(235 234 227 / 0.055);
-
-  --parte-1: #6f97c6;
-  --parte-2: #c47764;
-  --parte-3: #c78bb4;
-  --parte-4: #cfa95e;
-  --parte-5: #6fb0a8;
-  --parte-6: #9d99c0;
 }
 
 @theme inline {
@@ -62,12 +51,6 @@
   --color-bordo: var(--bordo);
   --color-bordo-forte: var(--bordo-forte);
   --color-focus: var(--focus);
-  --color-parte-1: var(--parte-1);
-  --color-parte-2: var(--parte-2);
-  --color-parte-3: var(--parte-3);
-  --color-parte-4: var(--parte-4);
-  --color-parte-5: var(--parte-5);
-  --color-parte-6: var(--parte-6);
 
   /* Spigoli quasi vivi ovunque, qualunque utility di raggio usino le pagine */
   --radius-xs: 1px;
