@@ -5,8 +5,10 @@ import { INTERVALLO_TEMPO, formattaAnno } from '../../../lib/percorsi-url';
 import {
   ETICHETTE_TIPO_ARCO,
   ETICHETTE_TIPO_NODO,
+  NUMERI_PARTE,
   TIPI_ARCO,
   TIPI_NODO,
+  arcoLeggendario,
   type TipoArco,
   type TipoNodo,
 } from '../../../lib/costanti';
@@ -192,13 +194,13 @@ export default function Controlli({
         <fieldset className="mt-2">
           <legend className="text-xs font-semibold">Parti</legend>
           <ul className="mt-1 space-y-0.5">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
+            {NUMERI_PARTE.map((n) => (
               <li key={n}>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={filtri.parti.has(n)}
-                    onChange={() => onCambia((f) => ({ ...f, parti: commuta(f.parti, n, [1, 2, 3, 4, 5, 6]) }))}
+                    onChange={() => onCambia((f) => ({ ...f, parti: commuta(f.parti, n, NUMERI_PARTE) }))}
                     className={casella}
                   />
                   <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: `var(--parte-${n})` }} />
@@ -233,7 +235,7 @@ export default function Controlli({
         <fieldset className="mt-3">
           <legend className="text-xs font-semibold">Relazioni</legend>
           <ul className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5">
-            {TIPI_ARCO.filter((t) => t !== 'attribuzione_infondata').map((tipo) => (
+            {TIPI_ARCO.filter((t) => !arcoLeggendario(t)).map((tipo) => (
               <li key={tipo}>
                 <label className="flex items-center gap-1.5 cursor-pointer text-xs">
                   <input

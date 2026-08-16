@@ -19,6 +19,7 @@ import matter from 'gray-matter';
 import { MultiDirectedGraph } from 'graphology';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { voceSchema, type VoceFrontmatter } from '../src/lib/schema';
+import { ARCO_CONTENIMENTO, N_PARTI, TIPI_NODO } from '../src/lib/costanti';
 import type { ArcoGrafo, DatiGrafo, DocCorpo, DocRicerca, NodoGrafo } from '../src/lib/tipi-grafo';
 
 const RADICE = resolve(import.meta.dirname ?? '.', '..');
@@ -97,15 +98,16 @@ export interface GrafoCostruito {
 
 /**
  * Costruisce il grafo e verifica gli invarianti strutturali.
- * Gli archi `contiene` sono derivati dal campo `parte` di ogni voce
- * (fonte unica: lo schema rifiuta i `contiene` dichiarati a mano).
+ * Gli archi di contenimento (ARCO_CONTENIMENTO, il primo degli archi
+ * derivati del seme) discendono dal campo `parte` di ogni voce
+ * (fonte unica: lo schema rifiuta gli archi derivati dichiarati a mano).
  */
 export function costruisciGrafo(voci: VoceLetta[]): GrafoCostruito {
   const problemi: string[] = [];
   const grafo = new MultiDirectedGraph();
   const perId = new Map(voci.map((v) => [v.fm.id, v]));
 
-  // nodi radice: esattamente una voce di tipo "parte" per ciascuna parte 1-6
+  // nodi radice: esattamente una voce di tipo "parte" per ciascuna parte 1..N_PARTI
   const radici = new Map<number, string>();
   for (const v of voci) {
     if (v.fm.tipo === 'parte') {
@@ -113,7 +115,7 @@ export function costruisciGrafo(voci: VoceLetta[]): GrafoCostruito {
       radici.set(v.fm.parte, v.fm.id);
     }
   }
-  for (let n = 1; n <= 6; n++) {
+  for (let n = 1; n <= N_PARTI; n++) {
     if (!radici.has(n)) problemi.push(`manca il nodo radice di tipo "parte" per la parte ${n}`);
   }
 
@@ -141,12 +143,15 @@ export function costruisciGrafo(voci: VoceLetta[]): GrafoCostruito {
     grafo.addDirectedEdgeWithKey(chiave, da, a, { tipo, nota });
   };
 
+  // il campo `luoghi` presuppone un tipo "luogo" nella tassonomia: se il
+  // seme non lo dichiara, resta solo il controllo del riferimento pendente
+  const tassonomiaHaLuogo = (TIPI_NODO as readonly string[]).includes('luogo');
   for (const v of voci) {
     for (const arco of v.fm.archi) aggiungiArco(v.fm.id, arco.verso, arco.tipo, arco.nota, v.file);
     for (const luogo of v.fm.luoghi) {
       const nodoLuogo = perId.get(luogo);
       if (!nodoLuogo) problemi.push(`${v.file}: luogo pendente "${luogo}"`);
-      else if (nodoLuogo.fm.tipo !== 'luogo')
+      else if (tassonomiaHaLuogo && nodoLuogo.fm.tipo !== 'luogo')
         problemi.push(`${v.file}: "${luogo}" è nei luoghi ma ha tipo "${nodoLuogo.fm.tipo}"`);
     }
   }
@@ -155,13 +160,13 @@ export function costruisciGrafo(voci: VoceLetta[]): GrafoCostruito {
   for (const v of voci) {
     if (v.fm.tipo === 'parte') continue;
     const radice = radici.get(v.fm.parte);
-    if (radice) aggiungiArco(radice, v.fm.id, 'contiene');
+    if (radice) aggiungiArco(radice, v.fm.id, ARCO_CONTENIMENTO);
   }
 
-  // aciclicità di `contiene` (garantita per costruzione, verificata comunque)
+  // aciclicità del contenimento (garantita per costruzione, verificata comunque)
   const soloContiene = new Map<string, string[]>();
   for (const a of archi) {
-    if (a.tipo !== 'contiene') continue;
+    if (a.tipo !== ARCO_CONTENIMENTO) continue;
     const lista = soloContiene.get(a.da) ?? [];
     lista.push(a.a);
     soloContiene.set(a.da, lista);
@@ -170,7 +175,7 @@ export function costruisciGrafo(voci: VoceLetta[]): GrafoCostruito {
   const visita = (nodo: string, pila: string[]): void => {
     if (stato.get(nodo) === 'chiuso') return;
     if (stato.get(nodo) === 'aperto') {
-      problemi.push(`ciclo in "contiene": ${[...pila, nodo].join(' → ')}`);
+      problemi.push(`ciclo in "${ARCO_CONTENIMENTO}": ${[...pila, nodo].join(' → ')}`);
       return;
     }
     stato.set(nodo, 'aperto');

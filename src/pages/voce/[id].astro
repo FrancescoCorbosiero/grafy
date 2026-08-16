@@ -10,6 +10,7 @@ import {
   ETICHETTE_TIPO_NODO,
   type TipoArco,
 } from '../../lib/schema';
+import { arcoDerivato, arcoLeggendario } from '../../lib/costanti';
 import { NOMI_PARTE } from '../../lib/palette';
 
 export async function getStaticPaths() {
@@ -27,7 +28,7 @@ const perId = new Map(dati.nodi.map((n) => [n.id, n]));
 const uscenti = new Map<TipoArco, ArcoGrafo[]>();
 const entranti = new Map<TipoArco, ArcoGrafo[]>();
 for (const arco of dati.archi) {
-  if (arco.tipo === 'contiene') continue;
+  if (arcoDerivato(arco.tipo)) continue;
   if (arco.da === nodo.id) {
     if (!uscenti.has(arco.tipo)) uscenti.set(arco.tipo, []);
     uscenti.get(arco.tipo)!.push(arco);
@@ -40,7 +41,7 @@ for (const arco of dati.archi) {
 // voci vicine: vicini diretti ordinati per peso, max 8
 const viciniId = new Set<string>();
 for (const arco of dati.archi) {
-  if (arco.tipo === 'contiene') continue;
+  if (arcoDerivato(arco.tipo)) continue;
   if (arco.da === nodo.id) viciniId.add(arco.a);
   if (arco.a === nodo.id) viciniId.add(arco.da);
 }
@@ -127,7 +128,7 @@ const gruppi = (mappa: Map<TipoArco, ArcoGrafo[]>) =>
             <div>
               <h3 class="mt-3 text-[0.7rem] uppercase tracking-wide font-semibold" style="color: var(--testo-tenue)">
                 {ETICHETTE_TIPO_ARCO[tipo]}
-                {tipo === 'attribuzione_infondata' && ' (genealogia leggendaria)'}
+                {arcoLeggendario(tipo) && ' (genealogia leggendaria)'}
               </h3>
               <ul class="mt-1 space-y-1.5">
                 {archi.map((arco) => (
@@ -151,7 +152,7 @@ const gruppi = (mappa: Map<TipoArco, ArcoGrafo[]>) =>
             <div>
               <h3 class="mt-3 text-[0.7rem] uppercase tracking-wide font-semibold" style="color: var(--testo-tenue)">
                 ← {ETICHETTE_TIPO_ARCO[tipo]}
-                {tipo === 'attribuzione_infondata' && ' (genealogia leggendaria)'}
+                {arcoLeggendario(tipo) && ' (genealogia leggendaria)'}
               </h3>
               <ul class="mt-1 space-y-1.5">
                 {archi.map((arco) => (

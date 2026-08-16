@@ -5,7 +5,16 @@
 import type { ArcoGrafo, DatiGrafo, NodoGrafo } from './tipi-grafo';
 import type { StatoGrafo } from './percorsi-url';
 import { INTERVALLO_TEMPO, withBase } from './percorsi-url';
-import { TIPI_ARCO, TIPI_NODO, type TipoArco, type TipoNodo } from './costanti';
+import {
+  NUMERI_PARTE,
+  TIPI_ARCO,
+  TIPI_NODO,
+  arcoDerivato,
+  arcoLeggendario,
+  type TipoArco,
+  type TipoNodo,
+} from './costanti';
+import { COLORI_PARTE } from './palette';
 
 let cache: Promise<DatiGrafo> | null = null;
 
@@ -32,8 +41,8 @@ export interface FiltriEffettivi {
 export function filtriDaStato(stato: StatoGrafo): FiltriEffettivi {
   return {
     tipi: new Set(stato.tipi ?? [...TIPI_NODO]),
-    archi: new Set(stato.archi ?? TIPI_ARCO.filter((t) => t !== 'attribuzione_infondata')),
-    parti: new Set(stato.parti ?? [1, 2, 3, 4, 5, 6]),
+    archi: new Set(stato.archi ?? TIPI_ARCO.filter((t) => !arcoLeggendario(t))),
+    parti: new Set(stato.parti ?? NUMERI_PARTE),
     da: stato.da ?? INTERVALLO_TEMPO[0],
     a: stato.a ?? INTERVALLO_TEMPO[1],
     leggendarie: stato.leggendarie ?? false,
@@ -55,7 +64,7 @@ export function arcoVisibile(
   f: FiltriEffettivi,
   visibiliNodi: (id: string) => boolean
 ): boolean {
-  if (arco.tipo === 'attribuzione_infondata' && !f.leggendarie) return false;
+  if (arcoLeggendario(arco.tipo) && !f.leggendarie) return false;
   if (!f.archi.has(arco.tipo)) return false;
   return visibiliNodi(arco.da) && visibiliNodi(arco.a);
 }
@@ -65,7 +74,7 @@ export function indicePerId(dati: DatiGrafo): Map<string, NodoGrafo> {
   return new Map(dati.nodi.map((n) => [n.id, n]));
 }
 
-/** Adiacenza non orientata (senza contiene, salvo includiContiene). */
+/** Adiacenza non orientata (senza archi derivati, salvo includiContiene). */
 export function adiacenza(
   dati: DatiGrafo,
   opzioni: { includiContiene?: boolean; includiLeggendarie?: boolean } = {}
@@ -76,8 +85,8 @@ export function adiacenza(
     adj.get(a)!.add(b);
   };
   for (const arco of dati.archi) {
-    if (arco.tipo === 'contiene' && !opzioni.includiContiene) continue;
-    if (arco.tipo === 'attribuzione_infondata' && !opzioni.includiLeggendarie) continue;
+    if (arcoDerivato(arco.tipo) && !opzioni.includiContiene) continue;
+    if (arcoLeggendario(arco.tipo) && !opzioni.includiLeggendarie) continue;
     aggiungi(arco.da, arco.a);
     aggiungi(arco.a, arco.da);
   }
@@ -162,15 +171,10 @@ export function coloriTema(): {
 } {
   const stile = getComputedStyle(document.documentElement);
   const leggi = (nome: string, fallback: string) => stile.getPropertyValue(nome).trim() || fallback;
+  const parte: Record<number, string> = {};
+  for (const n of NUMERI_PARTE) parte[n] = leggi(`--parte-${n}`, COLORI_PARTE[n]!);
   return {
-    parte: {
-      1: leggi('--parte-1', '#31639c'),
-      2: leggi('--parte-2', '#8c3a2e'),
-      3: leggi('--parte-3', '#6b2d5c'),
-      4: leggi('--parte-4', '#b08a3e'),
-      5: leggi('--parte-5', '#3e7a74'),
-      6: leggi('--parte-6', '#8b86af'),
-    },
+    parte,
     testo: leggi('--testo', '#1a1a2e'),
     tenue: leggi('--testo-tenue', '#5c5a6b'),
     sfondo: leggi('--sfondo', '#f7f4ee'),

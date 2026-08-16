@@ -2,7 +2,7 @@
  * Helper per URL interni (il sito vive sotto una base path su GitHub Pages)
  * e per la serializzazione dello stato del grafo nella query string (§6).
  */
-import { TIPI_ARCO, TIPI_NODO, type TipoArco, type TipoNodo } from './costanti';
+import { N_PARTI, TIPI_ARCO, TIPI_NODO, type TipoArco, type TipoNodo } from './costanti';
 
 export function withBase(percorso: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -14,9 +14,9 @@ export function withBase(percorso: string): string {
 export interface StatoGrafo {
   /** tipi di nodo visibili; undefined = tutti */
   tipi?: TipoNodo[];
-  /** tipi di arco visibili; undefined = tutti (salvo attribuzione_infondata) */
+  /** tipi di arco visibili; undefined = tutti (salvo i tipi leggendari) */
   archi?: TipoArco[];
-  /** parti visibili (1-6); undefined = tutte */
+  /** parti visibili (1..N_PARTI); undefined = tutte */
   parti?: number[];
   /** intervallo temporale [da, a] */
   da?: number;
@@ -59,7 +59,7 @@ export function analizzaStatoGrafo(query: string): StatoGrafo {
     .get('parti')
     ?.split(',')
     .map((n) => parseInt(n, 10))
-    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 6);
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= N_PARTI);
   if (parti && parti.length > 0) stato.parti = parti;
   const da = p.get('da');
   if (da !== null && Number.isFinite(Number(da))) stato.da = Number(da);

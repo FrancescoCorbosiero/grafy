@@ -1,6 +1,13 @@
-import { GLIFI_TIPO } from '../../../lib/icone';
-import { COLORI_ARCO, NOMI_PARTE } from '../../../lib/palette';
-import { ETICHETTE_TIPO_ARCO, ETICHETTE_TIPO_NODO, TIPI_ARCO, TIPI_NODO } from '../../../lib/costanti';
+import { glifoATratto, glifoTipo } from '../../../lib/icone';
+import { NOMI_PARTE, coloreArco } from '../../../lib/palette';
+import {
+  ETICHETTE_TIPO_ARCO,
+  ETICHETTE_TIPO_NODO,
+  NUMERI_PARTE,
+  TIPI_ARCO,
+  TIPI_NODO,
+  arcoLeggendario,
+} from '../../../lib/costanti';
 
 /** Legenda del grafo: colore = parte, glifo = tipo, colore d'arco = relazione. */
 export default function Legenda() {
@@ -12,7 +19,7 @@ export default function Legenda() {
         Colore · parte del volume
       </h4>
       <ul className="mt-1 space-y-0.5">
-        {[1, 2, 3, 4, 5, 6].map((n) => (
+        {NUMERI_PARTE.map((n) => (
           <li key={n} className="flex items-center gap-2">
             <span
               aria-hidden="true"
@@ -32,10 +39,10 @@ export default function Legenda() {
           <li key={tipo} className="flex items-center gap-2">
             <svg viewBox="0 0 24 24" className="size-3.5 shrink-0" aria-hidden="true">
               <path
-                d={GLIFI_TIPO[tipo]}
-                fill={tipo === 'corrente' ? 'none' : 'currentColor'}
-                stroke={tipo === 'corrente' ? 'currentColor' : 'none'}
-                strokeWidth={tipo === 'corrente' ? 2.4 : 0}
+                d={glifoTipo(tipo)}
+                fill={glifoATratto(tipo) ? 'none' : 'currentColor'}
+                stroke={glifoATratto(tipo) ? 'currentColor' : 'none'}
+                strokeWidth={glifoATratto(tipo) ? 2.4 : 0}
                 fillRule="evenodd"
               />
             </svg>
@@ -54,11 +61,11 @@ export default function Legenda() {
               aria-hidden="true"
               className="inline-block h-0.5 w-5"
               style={
-                tipo === 'attribuzione_infondata'
+                arcoLeggendario(tipo)
                   ? {
-                      backgroundImage: `repeating-linear-gradient(90deg, ${COLORI_ARCO[tipo]} 0 4px, transparent 4px 7px)`,
+                      backgroundImage: `repeating-linear-gradient(90deg, ${coloreArco(tipo)} 0 4px, transparent 4px 7px)`,
                     }
-                  : { background: COLORI_ARCO[tipo] }
+                  : { background: coloreArco(tipo) }
               }
             />
             {ETICHETTE_TIPO_ARCO[tipo]}

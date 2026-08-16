@@ -5,9 +5,14 @@ import type { TipoNodo } from './costanti';
  * monocromo) usati in legenda, elenco, pannello e — come data-URI — dentro i
  * nodi Sigma. Il tipo è sempre comunicato anche a testo: il glifo è un
  * rinforzo, non l'unico canale.
+ *
+ * La mappa è per id di tipo: i glifi qui sotto appartengono all'istanza di
+ * riferimento (più "parte", strutturale). Un tipo del seme senza glifo
+ * dedicato usa il glifo generico: aggiungerne di propri è una
+ * personalizzazione facoltativa, non un prerequisito del motore.
  */
-export const GLIFI_TIPO: Record<TipoNodo, string> = {
-  // rombo: le sei macro-aree
+export const GLIFI_TIPO: Record<string, string> = {
+  // rombo: le macro-aree (le parti del volume)
   parte: 'M12 3 L21 12 L12 21 L3 12 Z',
   // onda: una corrente
   corrente: 'M3 9 Q7.5 4.5 12 9 T21 9 M3 15 Q7.5 10.5 12 15 T21 15',
@@ -27,11 +32,26 @@ export const GLIFI_TIPO: Record<TipoNodo, string> = {
   luogo: 'M12 21 Q5 13.5 5 9.5 A7 7 0 0 1 19 9.5 Q19 13.5 12 21 Z M12 7 A2.5 2.5 0 1 0 12.01 7 Z',
 };
 
+/** Glifo generico (cerchio con punto) per i tipi senza glifo dedicato. */
+export const GLIFO_GENERICO = 'M12 4 A8 8 0 1 0 12.01 4 Z M12 10.5 A1.5 1.5 0 1 0 12.01 10.5 Z';
+
+/** Glifi resi a tratto (stroke) invece che a riempimento. */
+const GLIFI_A_TRATTO = new Set(['corrente']);
+
+/** Il path del glifo per il tipo, con ripiego sul glifo generico. */
+export function glifoTipo(tipo: TipoNodo | string): string {
+  return GLIFI_TIPO[tipo] ?? GLIFO_GENERICO;
+}
+
+/** true se il glifo del tipo va reso a tratto (stroke) e non a riempimento. */
+export function glifoATratto(tipo: TipoNodo | string): boolean {
+  return GLIFI_A_TRATTO.has(tipo);
+}
+
 /** SVG completo come stringa, per i data-URI dei nodi Sigma. */
 export function svgGlifo(tipo: TipoNodo, colore = '#ffffff'): string {
-  const path = GLIFI_TIPO[tipo];
-  const usaStroke = tipo === 'corrente';
-  const attributi = usaStroke
+  const path = glifoTipo(tipo);
+  const attributi = glifoATratto(tipo)
     ? `fill="none" stroke="${colore}" stroke-width="2.4" stroke-linecap="round"`
     : `fill="${colore}" fill-rule="evenodd"`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${path}" ${attributi}/></svg>`;

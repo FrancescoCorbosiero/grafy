@@ -7,13 +7,26 @@ import {
   serializzaStatoGrafo,
   type StatoGrafo,
 } from '../../src/lib/percorsi-url';
+import {
+  NUMERI_PARTE,
+  N_PARTI,
+  TIPI_ARCO,
+  TIPI_NODO,
+  arcoDerivato,
+  arcoLeggendario,
+} from '../../src/lib/costanti';
+
+/* Test del MOTORE: tipi e parti vengono dalla tassonomia generata dal seme. */
+const [tipoA, tipoB] = TIPI_NODO.filter((t) => t !== 'parte');
+const archiScelti = TIPI_ARCO.filter((t) => !arcoDerivato(t)).slice(0, 2);
+const parti = NUMERI_PARTE.slice(1, 3);
 
 describe('stato del grafo in query string (§6, URL condivisibili)', () => {
   it('serializza e rilegge uno stato completo (andata e ritorno)', () => {
     const stato: StatoGrafo = {
-      tipi: ['persona', 'opera'],
-      archi: ['influenza', 'attribuzione_infondata'],
-      parti: [2, 3],
+      tipi: [tipoA!, tipoB ?? tipoA!],
+      archi: archiScelti,
+      parti,
       da: -300,
       a: 1600,
       nodo: 'ficino',
@@ -29,11 +42,20 @@ describe('stato del grafo in query string (§6, URL condivisibili)', () => {
   });
 
   it('ignora valori fuori dominio senza esplodere', () => {
-    const stato = analizzaStatoGrafo('?tipi=persona,drago&parti=2,9&nodo=<script>&archi=influenza,magia');
-    expect(stato.tipi).toEqual(['persona']);
+    const stato = analizzaStatoGrafo(
+      `?tipi=${tipoA},tipo-inesistente&parti=2,${N_PARTI + 3}&nodo=<script>&archi=${archiScelti[0]},arco-inesistente`
+    );
+    expect(stato.tipi).toEqual([tipoA]);
     expect(stato.parti).toEqual([2]);
     expect(stato.nodo).toBeUndefined();
-    expect(stato.archi).toEqual(['influenza']);
+    expect(stato.archi).toEqual([archiScelti[0]]);
+  });
+
+  it('i tipi leggendari restano indirizzabili via URL', () => {
+    // il default li esclude, ma un URL condiviso può accenderli esplicitamente
+    const leggendario = TIPI_ARCO.find((t) => arcoLeggendario(t));
+    if (!leggendario) return;
+    expect(analizzaStatoGrafo(`?archi=${leggendario}`).archi).toEqual([leggendario]);
   });
 
   it('omette gli estremi temporali di default', () => {

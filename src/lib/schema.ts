@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { TIPI_ARCO, TIPI_NODO } from './costanti';
+import { N_PARTI, TIPI_ARCO, TIPI_NODO, arcoDerivato, arcoLeggendario } from './costanti';
 
 /**
  * Schema condiviso fra le content collections di Astro e lo script di build
  * del grafo (scripts/build-data.ts). Rispecchia il §3 del BRIEF.
- * Le costanti e le etichette (senza dipendenze) vivono in costanti.ts;
- * qui vengono riesportate per comodità del codice lato build.
+ * Le costanti (GENERATE da kit/seme.json) vivono in costanti.ts; qui vengono
+ * riesportate per comodità del codice lato build. Le regole sugli archi
+ * derivati e leggendari leggono ARCHI_DERIVATI e TIPI_LEGGENDARI del seme.
  */
 export {
   ETICHETTE_TIPO_ARCO,
@@ -30,18 +31,16 @@ export const arcoSchema = z
     nota: z.string().min(1).optional(),
   })
   .superRefine((arco, ctx) => {
-    if (arco.tipo === 'contiene') {
+    if (arcoDerivato(arco.tipo)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'gli archi "contiene" sono derivati automaticamente dal campo "parte": non dichiararli a mano',
+        message: `gli archi "${arco.tipo}" sono derivati automaticamente dalla pipeline (tassonomia.archiDerivati del seme): non dichiararli a mano`,
       });
     }
-    if (arco.tipo === 'attribuzione_infondata' && (!arco.nota || arco.nota.trim().length < 10)) {
+    if (arcoLeggendario(arco.tipo) && (!arco.nota || arco.nota.trim().length < 10)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message:
-          'ogni arco "attribuzione_infondata" richiede una "nota" che spieghi perché l\'attribuzione non regge',
+        message: `ogni arco leggendario "${arco.tipo}" richiede una "nota" che spieghi perché la relazione dichiarata non regge`,
       });
     }
   });
@@ -59,7 +58,7 @@ export const voceSchema = z.object({
   id: kebabId,
   titolo: z.string().min(1).max(120),
   tipo: z.enum(TIPI_NODO),
-  parte: z.number().int().gte(1).lte(6),
+  parte: z.number().int().gte(1).lte(N_PARTI),
   sommario: z.string().min(20).max(500),
   periodo: periodoSchema.optional(),
   luoghi: z.array(kebabId).default([]),

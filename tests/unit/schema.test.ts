@@ -1,17 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import { arcoSchema, periodoSchema, voceSchema } from '../../src/lib/schema';
+import {
+  ARCHI_DERIVATI,
+  N_PARTI,
+  TIPI_ARCO,
+  TIPI_NODO,
+  TIPI_LEGGENDARI,
+  arcoDerivato,
+  arcoLeggendario,
+} from '../../src/lib/costanti';
+
+/*
+ * Test del MOTORE: i tipi nei fixture vengono dalla tassonomia generata
+ * (kit/seme.json), non da valori cablati. I casi sugli archi derivati e
+ * leggendari si attivano solo se il seme li dichiara.
+ */
+const TIPO_VOCE = TIPI_NODO.find((t) => t !== 'parte')!;
+const ARCO_DOCUMENTATO = TIPI_ARCO.find((t) => !arcoDerivato(t) && !arcoLeggendario(t))!;
+const ARCO_LEGGENDARIO = TIPI_LEGGENDARI[0];
+const ARCO_DERIVATO = ARCHI_DERIVATI[0];
 
 const voceValida = {
   id: 'ficino',
   titolo: 'Marsilio Ficino',
-  tipo: 'persona',
+  tipo: TIPO_VOCE,
   parte: 2,
   sommario: 'Traduttore del Corpus Hermeticum, teorico della magia astrale medica.',
   periodo: { da: 1433, a: 1499 },
   luoghi: ['firenze'],
   alias: ['Ficinus'],
   peso: 3,
-  archi: [{ verso: 'corpus-hermeticum', tipo: 'elabora', nota: 'Traduzione del 1463' }],
+  archi: [{ verso: 'corpus-hermeticum', tipo: ARCO_DOCUMENTATO, nota: 'Traduzione del 1463' }],
   fonti: ['Yates'],
 };
 
@@ -27,8 +46,8 @@ describe('schema della voce (§3.4)', () => {
   });
 
   it('rifiuta tipo e parte fuori dominio', () => {
-    expect(voceSchema.safeParse({ ...voceValida, tipo: 'santo' }).success).toBe(false);
-    expect(voceSchema.safeParse({ ...voceValida, parte: 7 }).success).toBe(false);
+    expect(voceSchema.safeParse({ ...voceValida, tipo: 'tipo-inesistente' }).success).toBe(false);
+    expect(voceSchema.safeParse({ ...voceValida, parte: N_PARTI + 1 }).success).toBe(false);
     expect(voceSchema.safeParse({ ...voceValida, parte: 0 }).success).toBe(false);
   });
 
@@ -48,28 +67,28 @@ describe('schema della voce (§3.4)', () => {
 });
 
 describe('schema degli archi (§3.3)', () => {
-  it('rifiuta un arco attribuzione_infondata senza nota', () => {
-    expect(arcoSchema.safeParse({ verso: 'massoneria', tipo: 'attribuzione_infondata' }).success).toBe(false);
+  it.runIf(ARCO_LEGGENDARIO)('rifiuta un arco leggendario senza nota', () => {
+    expect(arcoSchema.safeParse({ verso: 'massoneria', tipo: ARCO_LEGGENDARIO }).success).toBe(false);
     expect(
-      arcoSchema.safeParse({ verso: 'massoneria', tipo: 'attribuzione_infondata', nota: 'breve' }).success
+      arcoSchema.safeParse({ verso: 'massoneria', tipo: ARCO_LEGGENDARIO, nota: 'breve' }).success
     ).toBe(false);
   });
 
-  it('accetta attribuzione_infondata con nota esplicativa', () => {
+  it.runIf(ARCO_LEGGENDARIO)('accetta un arco leggendario con nota esplicativa', () => {
     expect(
       arcoSchema.safeParse({
         verso: 'massoneria',
-        tipo: 'attribuzione_infondata',
+        tipo: ARCO_LEGGENDARIO,
         nota: 'La filiazione templare è una costruzione settecentesca degli alti gradi.',
       }).success
     ).toBe(true);
   });
 
-  it('rifiuta archi contiene dichiarati a mano (sono derivati)', () => {
-    expect(arcoSchema.safeParse({ verso: 'ficino', tipo: 'contiene' }).success).toBe(false);
+  it.runIf(ARCO_DERIVATO)('rifiuta archi derivati dichiarati a mano', () => {
+    expect(arcoSchema.safeParse({ verso: 'ficino', tipo: ARCO_DERIVATO }).success).toBe(false);
   });
 
   it('rifiuta tipi di arco sconosciuti', () => {
-    expect(arcoSchema.safeParse({ verso: 'ficino', tipo: 'ispira' }).success).toBe(false);
+    expect(arcoSchema.safeParse({ verso: 'ficino', tipo: 'arco-inesistente' }).success).toBe(false);
   });
 });

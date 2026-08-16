@@ -9,8 +9,9 @@ import {
   preferisceMenoMovimento,
 } from '../../lib/grafo-client';
 import { dataUriGlifo } from '../../lib/icone';
-import { COLORI_ARCO } from '../../lib/palette';
+import { coloreArco } from '../../lib/palette';
 import { withBase } from '../../lib/percorsi-url';
+import { arcoDerivato, arcoLeggendario } from '../../lib/costanti';
 
 interface Props {
   /** id della voce al centro dell'ego-network */
@@ -66,11 +67,11 @@ export default function EgoGraph({ centro }: Props) {
           });
         }
         for (const a of dati.archi) {
-          if (a.tipo === 'contiene') continue;
+          if (arcoDerivato(a.tipo)) continue;
           if (!dentro.has(a.da) || !dentro.has(a.a)) continue;
           g.addDirectedEdgeWithKey(a.chiave, a.da, a.a, {
-            size: a.tipo === 'attribuzione_infondata' ? 1 : 1.3,
-            color: COLORI_ARCO[a.tipo],
+            size: arcoLeggendario(a.tipo) ? 1 : 1.3,
+            color: coloreArco(a.tipo),
             type: 'arrow',
           });
         }

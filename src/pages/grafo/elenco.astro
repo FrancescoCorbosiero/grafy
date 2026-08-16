@@ -4,6 +4,7 @@ import grafo from '../../generated/graph.json';
 import type { DatiGrafo } from '../../lib/tipi-grafo';
 import { formattaPeriodo, withBase } from '../../lib/percorsi-url';
 import { ETICHETTE_TIPO_NODO, TIPI_NODO } from '../../lib/schema';
+import { NUMERI_PARTE } from '../../lib/costanti';
 import { NOMI_PARTE, NOMI_PARTE_BREVI } from '../../lib/palette';
 
 const dati = grafo as unknown as DatiGrafo;
@@ -44,7 +45,7 @@ const nodi = [...dati.nodi].sort((a, b) => a.titolo.localeCompare(b.titolo, 'it'
         <label for="filtro-parte" class="block text-xs font-medium mb-1">Parte</label>
         <select id="filtro-parte" class="rounded border border-bordo bg-rialzato px-2 py-1.5">
           <option value="">Tutte</option>
-          {[1, 2, 3, 4, 5, 6].map((n) => <option value={String(n)}>{NOMI_PARTE[n]}</option>)}
+          {NUMERI_PARTE.map((n) => <option value={String(n)}>{NOMI_PARTE[n]}</option>)}
         </select>
       </div>
       <p class="text-xs" style="color: var(--testo-tenue)" role="status" id="conteggio-elenco"></p>

@@ -6,10 +6,19 @@ import { brushX, type D3BrushEvent } from 'd3-brush';
 import { caricaGrafo, preferisceMenoMovimento } from '../../lib/grafo-client';
 import type { DatiGrafo, NodoGrafo } from '../../lib/tipi-grafo';
 import { INTERVALLO_TEMPO, formattaAnno, withBase } from '../../lib/percorsi-url';
-import { ETICHETTE_TIPO_NODO, type TipoNodo } from '../../lib/costanti';
+import { ETICHETTE_TIPO_NODO, TIPI_NODO, type TipoNodo } from '../../lib/costanti';
 
-/** Corsie della timeline: solo i tipi con voci datate. */
-const CORSIE: TipoNodo[] = ['evento', 'corrente', 'persona', 'opera', 'luogo'];
+/**
+ * Corsie della timeline. L'ordine curato dell'istanza di riferimento vale
+ * per i tipi che la tassonomia del seme dichiara davvero; gli altri tipi
+ * con voci datate si accodano nell'ordine del seme (le corsie senza voci
+ * datate non compaiono).
+ */
+const ORDINE_CORSIE_PREFERITO = ['evento', 'corrente', 'persona', 'opera', 'luogo'];
+const CORSIE: TipoNodo[] = [
+  ...ORDINE_CORSIE_PREFERITO.filter((t): t is TipoNodo => (TIPI_NODO as readonly string[]).includes(t)),
+  ...TIPI_NODO.filter((t) => t !== 'parte' && !ORDINE_CORSIE_PREFERITO.includes(t)),
+];
 const ALTEZZA_RIGA = 16;
 const LARGHEZZA = 1100;
 
@@ -61,13 +70,14 @@ export default function TimelineView() {
   const corsie = useMemo(() => {
     if (!dati) return [];
     let y = 34;
-    return CORSIE.map((tipo) => {
+    return CORSIE.flatMap((tipo) => {
       const datati = dati.nodi.filter((n) => n.tipo === tipo && n.periodo);
+      if (datati.length === 0) return [];
       const { elementi, righe } = impacchetta(datati);
       const inizioY = y;
       const altezza = righe * ALTEZZA_RIGA + 14;
       y += altezza;
-      return { tipo, elementi, righe, inizioY, altezza };
+      return [{ tipo, elementi, righe, inizioY, altezza }];
     });
   }, [dati]);
 

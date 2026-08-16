@@ -18,7 +18,7 @@ import {
   type FiltriEffettivi,
 } from '../../../lib/grafo-client';
 import { dataUriGlifo } from '../../../lib/icone';
-import { COLORI_ARCO } from '../../../lib/palette';
+import { COLORE_ARCO_LEGGENDARIO, coloreArco } from '../../../lib/palette';
 import {
   INTERVALLO_TEMPO,
   analizzaStatoGrafo,
@@ -26,7 +26,13 @@ import {
   withBase,
   type StatoGrafo,
 } from '../../../lib/percorsi-url';
-import { TIPI_ARCO, TIPI_NODO } from '../../../lib/costanti';
+import {
+  N_PARTI,
+  TIPI_ARCO,
+  TIPI_NODO,
+  arcoDerivato,
+  arcoLeggendario,
+} from '../../../lib/costanti';
 import Controlli from './Controlli';
 import PannelloNodo from './PannelloNodo';
 
@@ -36,10 +42,10 @@ type Focus = { modo: 'cluster' | 'ego2'; nodo: string } | null;
 function statoDaFiltri(f: FiltriEffettivi, nodo: string | null): StatoGrafo {
   const stato: StatoGrafo = {};
   if (f.tipi.size < TIPI_NODO.length) stato.tipi = [...f.tipi];
-  const archiDefault = TIPI_ARCO.filter((t) => t !== 'attribuzione_infondata');
+  const archiDefault = TIPI_ARCO.filter((t) => !arcoLeggendario(t));
   if (f.archi.size !== archiDefault.length || archiDefault.some((t) => !f.archi.has(t)))
     stato.archi = [...f.archi];
-  if (f.parti.size < 6) stato.parti = [...f.parti];
+  if (f.parti.size < N_PARTI) stato.parti = [...f.parti];
   if (f.da !== INTERVALLO_TEMPO[0]) stato.da = f.da;
   if (f.a !== INTERVALLO_TEMPO[1]) stato.a = f.a;
   if (nodo) stato.nodo = nodo;
@@ -135,10 +141,10 @@ export default function GraphView() {
       });
     }
     for (const a of dati.archi) {
-      if (a.tipo === 'attribuzione_infondata') continue; // resi dall'overlay SVG tratteggiato
+      if (arcoLeggendario(a.tipo)) continue; // resi dall'overlay SVG tratteggiato
       g.addDirectedEdgeWithKey(a.chiave, a.da, a.a, {
-        size: a.tipo === 'contiene' ? 0.6 : 1.4,
-        color: COLORI_ARCO[a.tipo],
+        size: arcoDerivato(a.tipo) ? 0.6 : 1.4,
+        color: coloreArco(a.tipo),
         tipoArco: a.tipo,
         type: 'arrow',
       });
@@ -223,17 +229,17 @@ export default function GraphView() {
       const frammenti: string[] = [];
       if (mostra) {
         for (const a of dati.archi) {
-          if (a.tipo !== 'attribuzione_infondata') continue;
+          if (!arcoLeggendario(a.tipo)) continue;
           if (!nodoEVisibile(a.da) || !nodoEVisibile(a.a)) continue;
           const p1 = sigma.graphToViewport({ x: perId.get(a.da)!.x, y: perId.get(a.da)!.y });
           const p2 = sigma.graphToViewport({ x: perId.get(a.a)!.x, y: perId.get(a.a)!.y });
           frammenti.push(
-            `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${COLORI_ARCO.attribuzione_infondata}" stroke-width="1.8" stroke-dasharray="7 5" opacity="0.9" marker-end="url(#freccia-leggendaria)"/>`
+            `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${COLORE_ARCO_LEGGENDARIO}" stroke-width="1.8" stroke-dasharray="7 5" opacity="0.9" marker-end="url(#freccia-leggendaria)"/>`
           );
         }
       }
       svg.innerHTML =
-        `<defs><marker id="freccia-leggendaria" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8 Z" fill="${COLORI_ARCO.attribuzione_infondata}"/></marker></defs>` +
+        `<defs><marker id="freccia-leggendaria" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8 Z" fill="${COLORE_ARCO_LEGGENDARIO}"/></marker></defs>` +
         frammenti.join('');
     };
     sigma.on('afterRender', ridisegnaOverlay);

@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { caricaGrafo } from '../../lib/grafo-client';
 import type { ArcoGrafo, DatiGrafo, NodoGrafo } from '../../lib/tipi-grafo';
 import { withBase } from '../../lib/percorsi-url';
-import { ETICHETTE_TIPO_ARCO, ETICHETTE_TIPO_NODO, type TipoNodo } from '../../lib/costanti';
+import {
+  ETICHETTE_TIPO_ARCO,
+  ETICHETTE_TIPO_NODO,
+  arcoDerivato,
+  arcoLeggendario,
+  type TipoNodo,
+} from '../../lib/costanti';
+import { COLORE_ARCO_LEGGENDARIO } from '../../lib/palette';
 
 interface PassoCammino {
   nodo: NodoGrafo;
@@ -64,13 +71,13 @@ export default function PathFinder() {
     for (const n of dati.nodi) g.addNode(n.id);
     const archiScelti = new Map<string, ArcoGrafo>();
     for (const arco of dati.archi) {
-      if (arco.tipo === 'contiene' && !usaContiene) continue;
-      if (arco.tipo === 'attribuzione_infondata' && !usaLeggendarie) continue;
+      if (arcoDerivato(arco.tipo) && !usaContiene) continue;
+      if (arcoLeggendario(arco.tipo) && !usaLeggendarie) continue;
       const chiave = [arco.da, arco.a].sort().join('~');
       if (!g.hasEdge(arco.da, arco.a)) g.addEdge(arco.da, arco.a);
-      // fra archi paralleli tieni il più "raccontabile": preferisci i non-contiene
+      // fra archi paralleli tieni il più "raccontabile": preferisci i non derivati
       const precedente = archiScelti.get(chiave);
-      if (!precedente || (precedente.tipo === 'contiene' && arco.tipo !== 'contiene')) {
+      if (!precedente || (arcoDerivato(precedente.tipo) && !arcoDerivato(arco.tipo))) {
         archiScelti.set(chiave, arco);
       }
     }
@@ -198,12 +205,12 @@ export default function PathFinder() {
                     {successivo && passo.arco && (
                       <p className="mt-1 text-sm ps-4 border-s-2" style={{ borderColor: `var(--parte-${passo.nodo.parte})` }}>
                         {frase(passo, successivo)}
-                        {passo.arco.tipo === 'attribuzione_infondata' && (
-                          <span className="block text-xs mt-0.5" style={{ color: '#b3475f' }}>
-                            ⚠ attribuzione infondata{passo.arco.nota ? `: ${passo.arco.nota}` : ''}
+                        {arcoLeggendario(passo.arco.tipo) && (
+                          <span className="block text-xs mt-0.5" style={{ color: COLORE_ARCO_LEGGENDARIO }}>
+                            ⚠ {ETICHETTE_TIPO_ARCO[passo.arco.tipo]}{passo.arco.nota ? `: ${passo.arco.nota}` : ''}
                           </span>
                         )}
-                        {passo.arco.tipo !== 'attribuzione_infondata' && passo.arco.nota && (
+                        {!arcoLeggendario(passo.arco.tipo) && passo.arco.nota && (
                           <span className="block text-xs mt-0.5" style={{ color: 'var(--testo-tenue)' }}>
                             {passo.arco.nota}
                           </span>

@@ -1,7 +1,13 @@
 import type { DatiGrafo, NodoGrafo } from '../../../lib/tipi-grafo';
 import { archiPerTipo, indicePerId } from '../../../lib/grafo-client';
 import { formattaPeriodo, withBase } from '../../../lib/percorsi-url';
-import { ETICHETTE_TIPO_ARCO, ETICHETTE_TIPO_NODO, type TipoArco } from '../../../lib/costanti';
+import {
+  ETICHETTE_TIPO_ARCO,
+  ETICHETTE_TIPO_NODO,
+  arcoDerivato,
+  arcoLeggendario,
+  type TipoArco,
+} from '../../../lib/costanti';
 import { NOMI_PARTE_BREVI } from '../../../lib/palette';
 
 interface Props {
@@ -34,13 +40,13 @@ export default function PannelloNodo({
     direzione: 'uscenti' | 'entranti'
   ) =>
     [...mappa.entries()]
-      .filter(([tipo]) => tipo !== 'contiene')
+      .filter(([tipo]) => !arcoDerivato(tipo))
       .map(([tipo, archi]) => (
         <div key={`${direzione}-${tipo}`}>
           <h4 className="text-[0.7rem] uppercase tracking-wide font-semibold mt-3 mb-1"
               style={{ color: 'var(--testo-tenue)' }}>
             {direzione === 'uscenti' ? ETICHETTE_TIPO_ARCO[tipo] : `${ETICHETTE_TIPO_ARCO[tipo]} ← da`}
-            {tipo === 'attribuzione_infondata' && (
+            {arcoLeggendario(tipo) && (
               <span className="ms-1 normal-case font-normal">(genealogia leggendaria)</span>
             )}
           </h4>

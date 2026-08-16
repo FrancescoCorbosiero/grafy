@@ -4,6 +4,7 @@ import grafo from '../../generated/graph.json';
 import type { DatiGrafo } from '../../lib/tipi-grafo';
 import { withBase } from '../../lib/percorsi-url';
 import { ETICHETTE_TIPO_ARCO, TIPI_ARCO } from '../../lib/schema';
+import { arcoDerivato, arcoLeggendario } from '../../lib/costanti';
 
 /**
  * Tutti gli archi del grafo in una tavola ordinabile e filtrabile: la vista
@@ -16,7 +17,7 @@ const perId = new Map(dati.nodi.map((n) => [n.id, n]));
 const titoloDi = (id: string) => perId.get(id)?.titolo ?? id;
 
 const archi = dati.archi
-  .filter((a) => a.tipo !== 'contiene')
+  .filter((a) => !arcoDerivato(a.tipo))
   .sort(
     (x, y) =>
       titoloDi(x.da).localeCompare(titoloDi(y.da), 'it') ||
@@ -53,7 +54,7 @@ const archi = dati.archi
         <label for="filtro-arco" class="block text-xs font-medium mb-1">Tipo di relazione</label>
         <select id="filtro-arco" class="rounded-sm border border-bordo bg-rialzato px-2 py-1.5">
           <option value="">Tutte</option>
-          {TIPI_ARCO.filter((t) => t !== 'contiene').map((t) => <option value={t}>{ETICHETTE_TIPO_ARCO[t]}</option>)}
+          {TIPI_ARCO.filter((t) => !arcoDerivato(t)).map((t) => <option value={t}>{ETICHETTE_TIPO_ARCO[t]}</option>)}
         </select>
       </div>
       <label class="flex items-center gap-1.5 pb-1.5">
@@ -86,7 +87,7 @@ const archi = dati.archi
                 data-tipo={arco.tipo}
                 data-a={titoloDi(arco.a).toLowerCase()}
                 data-testo={`${titoloDi(arco.da)} ${ETICHETTE_TIPO_ARCO[arco.tipo]} ${titoloDi(arco.a)} ${arco.nota ?? ''}`.toLowerCase()}
-                data-leggendaria={arco.tipo === 'attribuzione_infondata' ? '1' : undefined}
+                data-leggendaria={arcoLeggendario(arco.tipo) ? '1' : undefined}
               >
                 <th scope="row" class="py-2 pe-3 text-start font-medium">
                   <a class="underline decoration-dotted underline-offset-2 hover:text-accento" href={withBase(`/voce/${arco.da}`)}>
@@ -95,7 +96,7 @@ const archi = dati.archi
                 </th>
                 <td class="py-2 pe-3 whitespace-nowrap">
                   {ETICHETTE_TIPO_ARCO[arco.tipo]}
-                  {arco.tipo === 'attribuzione_infondata' && (
+                  {arcoLeggendario(arco.tipo) && (
                     <span class="etichetta ms-1 border border-bordo bg-incassato px-1 py-0.5 text-tenue">leggendaria</span>
                   )}
                 </td>

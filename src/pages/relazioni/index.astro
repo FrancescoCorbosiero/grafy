@@ -4,6 +4,7 @@ import grafo from '../../generated/graph.json';
 import type { ArcoGrafo, DatiGrafo, NodoGrafo } from '../../lib/tipi-grafo';
 import { formattaPeriodo, withBase } from '../../lib/percorsi-url';
 import { ETICHETTE_TIPO_ARCO, ETICHETTE_TIPO_NODO, TIPI_ARCO, TIPI_NODO } from '../../lib/schema';
+import { NUMERI_PARTE, arcoDerivato, arcoLeggendario } from '../../lib/costanti';
 import { NOMI_PARTE } from '../../lib/palette';
 
 /**
@@ -15,7 +16,7 @@ import { NOMI_PARTE } from '../../lib/palette';
  */
 const dati = grafo as unknown as DatiGrafo;
 const perId = new Map(dati.nodi.map((n) => [n.id, n]));
-const archi = dati.archi.filter((a) => a.tipo !== 'contiene');
+const archi = dati.archi.filter((a) => !arcoDerivato(a.tipo));
 
 const uscentiPer = new Map<string, ArcoGrafo[]>();
 const entrantiPer = new Map<string, ArcoGrafo[]>();
@@ -96,7 +97,7 @@ const totaleArchi = archi.length;
         <label for="filtro-arco" class="block text-xs font-medium mb-1">Tipo di relazione</label>
         <select id="filtro-arco" class="rounded-sm border border-bordo bg-rialzato px-2 py-1.5">
           <option value="">Tutte</option>
-          {TIPI_ARCO.filter((t) => t !== 'contiene').map((t) => <option value={t}>{ETICHETTE_TIPO_ARCO[t]}</option>)}
+          {TIPI_ARCO.filter((t) => !arcoDerivato(t)).map((t) => <option value={t}>{ETICHETTE_TIPO_ARCO[t]}</option>)}
           <option value="collocazione">collocazione nei luoghi</option>
         </select>
       </div>
@@ -104,7 +105,7 @@ const totaleArchi = archi.length;
         <label for="filtro-parte" class="block text-xs font-medium mb-1">Parte</label>
         <select id="filtro-parte" class="rounded-sm border border-bordo bg-rialzato px-2 py-1.5">
           <option value="">Tutte</option>
-          {[1, 2, 3, 4, 5, 6].map((n) => <option value={String(n)}>{NOMI_PARTE[n]}</option>)}
+          {NUMERI_PARTE.map((n) => <option value={String(n)}>{NOMI_PARTE[n]}</option>)}
         </select>
       </div>
       <label class="flex items-center gap-1.5 pb-1.5">
@@ -115,7 +116,7 @@ const totaleArchi = archi.length;
     </form>
 
     {
-      [1, 2, 3, 4, 5, 6].map((parte) => (
+      NUMERI_PARTE.map((parte) => (
         <section aria-labelledby={`parte-${parte}`} data-sezione-parte={String(parte)} class="mt-10">
           <h2 id={`parte-${parte}`} class="flex items-center gap-2 text-lg font-semibold tracking-tight border-b border-bordo pb-2">
             <span aria-hidden="true" class="inline-block size-2.5 rounded-full" style={`background: var(--parte-${parte})`} />
@@ -146,24 +147,24 @@ const totaleArchi = archi.length;
                   </h3>
                   <ul class="mt-2 grid gap-1 text-sm">
                     {uscenti.map((a) => (
-                      <li data-arco data-tipo-arco={a.tipo} data-leggendaria={a.tipo === 'attribuzione_infondata' ? '1' : undefined}>
+                      <li data-arco data-tipo-arco={a.tipo} data-leggendaria={arcoLeggendario(a.tipo) ? '1' : undefined}>
                         <span class="text-tenue">→ {ETICHETTE_TIPO_ARCO[a.tipo]} →</span>
                         <a class="underline decoration-dotted underline-offset-2 hover:text-accento" href={withBase(`/voce/${a.a}`)}>
                           {titoloDi(a.a)}
                         </a>
-                        {a.tipo === 'attribuzione_infondata' && (
+                        {arcoLeggendario(a.tipo) && (
                           <span class="etichetta ms-1 border border-bordo bg-incassato px-1 py-0.5 text-tenue">leggendaria</span>
                         )}
                         {a.nota && <span class="text-tenue"> — {a.nota}</span>}
                       </li>
                     ))}
                     {entranti.map((a) => (
-                      <li data-arco data-tipo-arco={a.tipo} data-leggendaria={a.tipo === 'attribuzione_infondata' ? '1' : undefined}>
+                      <li data-arco data-tipo-arco={a.tipo} data-leggendaria={arcoLeggendario(a.tipo) ? '1' : undefined}>
                         <span class="text-tenue">← {ETICHETTE_TIPO_ARCO[a.tipo]} ←</span>
                         <a class="underline decoration-dotted underline-offset-2 hover:text-accento" href={withBase(`/voce/${a.da}`)}>
                           {titoloDi(a.da)}
                         </a>
-                        {a.tipo === 'attribuzione_infondata' && (
+                        {arcoLeggendario(a.tipo) && (
                           <span class="etichetta ms-1 border border-bordo bg-incassato px-1 py-0.5 text-tenue">leggendaria</span>
                         )}
                         {a.nota && <span class="text-tenue"> — {a.nota}</span>}
