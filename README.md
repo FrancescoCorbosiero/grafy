@@ -42,11 +42,16 @@ perché l'attribuzione non regge.
 
 ## Architettura dei dati (fonte unica)
 
-Il grafo **non** è un file parallelo al contenuto: viene derivato a build time dal frontmatter
-delle voci in `src/content/voci/` (una voce = un nodo; gli archi sono dichiarati nella voce di
-partenza; i `contiene` parte→voce sono derivati dal campo `parte`).
+Il motore è **seed-native**: la tassonomia (tipi di nodo e di arco, etichette, archi derivati
+e leggendari, parti) non è scritta nel codice ma **generata** da `kit/seme.json` come primo
+passo della pipeline. Il grafo **non** è un file parallelo al contenuto: viene derivato a
+build time dal frontmatter delle voci in `src/content/voci/` (una voce = un nodo; gli archi
+sono dichiarati nella voce di partenza; gli archi di contenimento parte→voce sono derivati
+dal campo `parte`).
 
 ```
+kit/seme.json ───────────▶ scripts/genera-costanti.ts ─▶ src/generated/costanti.ts (tassonomia)
+     (tassonomia, parti)      · tipi statici (as const)   src/generated/parti.css (colori parte)
 src/content/voci/*.md ──▶ scripts/build-data.ts ──▶ src/generated/graph.json (pagine statiche)
      (frontmatter Zod)        · validazioni bloccanti     public/data/graph.json (viste client)
                               · layout ForceAtlas2        public/data/ricerca-*.json (indici)
@@ -55,8 +60,8 @@ contenuti/*.md ──────────▶ scripts/build-capitoli.ts ─�
 ```
 
 Validazioni che **fermano la build**: riferimenti pendenti, archi duplicati o riflessivi,
-cicli in `contiene`, nodi non raggiungibili, `attribuzione_infondata` senza nota, link interni
-a voci inesistenti, id non kebab-case.
+cicli nel contenimento, nodi non raggiungibili, archi leggendari senza nota, link interni
+a voci inesistenti, id non kebab-case, tipi o parti fuori dalla tassonomia del seme.
 
 ## Comandi
 
@@ -95,8 +100,11 @@ in **Settings → Pages** impostare *Source: GitHub Actions*. Il sito è configu
 
 Il sito è un'istanza di un motore riutilizzabile: il contenuto è separabile in un
 **seme** (JSON con tassonomia, parti, voci, archi, regole) da cui un progetto
-gemello su un altro argomento-nodo può essere generato e costruito. Il flusso in
-tre passi — genera il seme (con validazione dell'argomento), valida il seme,
-costruisci il sito con Claude Code — è documentato in **[`kit/LEGGIMI.md`](kit/LEGGIMI.md)**.
+gemello su un altro argomento-nodo può essere generato e costruito. Basta mettere
+il seme in `kit/seme.json` ed eseguire `npm run data`: il motore si adatta da sé
+alla tassonomia, senza modifiche a mano del codice. Il flusso in tre passi —
+genera il seme (con validazione dell'argomento), valida il seme, costruisci il
+sito con Claude Code — è documentato in **[`kit/LEGGIMI.md`](kit/LEGGIMI.md)**.
 Il seme di questo stesso sito, estratto dal contenuto reale e validato in CI, è in
-`kit/esempio/seme-esoterismo.json`.
+`kit/esempio/seme-esoterismo.json` (nella fabbrica, `kit/seme.json` ne è la copia:
+l'istanza di riferimento si auto-descrive col proprio seme).

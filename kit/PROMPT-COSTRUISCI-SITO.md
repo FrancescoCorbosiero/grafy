@@ -26,29 +26,39 @@ npx tsx kit/valida-seme.ts kit/seme.json
   vincoli di progetto (es. doppio registro disattivato ⇒ nascondi
   l'interruttore "leggendarie" in legenda e nello stato URL).
 
-## 1 · Adatta il motore alla tassonomia
+## 1 · Il motore si adatta da sé: seme in posizione, codegen, verifica
 
-Nell'ordine, perché tutto il resto dipende da qui:
+Il motore è **seed-native**: la tassonomia non si scrive nel codice.
 
-1. `src/lib/costanti.ts` — sostituisci `TIPI_NODO` (quelli del seme + `parte`),
-   `TIPI_ARCO`, e le etichette con quelle del seme.
-2. `src/lib/schema.ts` — rivedi i `superRefine` degli archi: la regola "arco
-   derivato ⇒ mai dichiarato" va applicata ai tipi in `tassonomia.archiDerivati`;
-   la regola "nota obbligatoria" ai tipi in `doppioRegistro.tipiLeggendari`.
-3. `src/lib/grafo-client.ts` — il filtro degli archi spenti di default deve
-   leggere i tipi leggendari del seme (non `attribuzione_infondata` cablato).
-4. `src/lib/palette.ts` + `src/styles/global.css` — se le parti non sono 6,
-   estendi/riduci `COLORI_PARTE` e le variabili `--parte-*` mantenendo la
-   distinguibilità in deuteranopia: il test `palette-deuteranopia.test.ts`
-   è il giudice, aggiornalo con il nuovo numero di parti e fallo passare.
-5. Cerca ogni occorrenza residua dei tipi vecchi (`grep -rn` su `src/`,
-   `scripts/`, `tests/`) — legenda, etichette dei dossier, controlli.
+1. Metti il seme in `kit/seme.json` (fatto al passo 0).
+2. Esegui `npm run data`. Il primo passo (`scripts/genera-costanti.ts`)
+   genera da `kit/seme.json`:
+   - `src/generated/costanti.ts` — tipi di nodo e di arco, etichette, archi
+     derivati e leggendari, `N_PARTI`, nomi delle parti (tipi statici);
+   - `src/generated/parti.css` — variabili `--parte-*` chiaro/scuro, dai set
+     pre-validati in deuteranopia di `src/lib/palette-parti.ts` (4–8 parti).
+3. Verifica il codegen: leggi il riepilogo a terminale, apri
+   `src/generated/costanti.ts` e controlla tipi, etichette e nomi delle
+   parti. Il nome breve di una parte viene dalla coda del suo id
+   (`parte-5-simboli` → «Simboli»), con gli accenti recuperati dal titolo:
+   se un nome non ti convince, sistemare l'id o il titolo nel seme è la
+   correzione giusta. `npm test` deve essere già verde qui: schema,
+   invarianti e palette girano sulle costanti generate.
+
+Schema Zod, filtri del grafo, legenda, palette e variabili CSS leggono tutto
+dal modulo generato: **nessuna modifica a mano del codice**. Facoltative (mai
+prerequisiti): glifi dedicati ai tuoi tipi in `src/lib/icone.ts` (altrimenti
+glifo generico), ordine delle corsie della timeline in
+`src/components/islands/TimelineView.tsx`, colori d'arco (assegnati per
+posizione in `src/lib/palette.ts`).
 
 ## 2 · Sostituisci il contenuto con il seme
 
 1. **Svuota** `src/content/voci/`, `src/content/percorsi/`,
    `src/content/blog/`, `contenuti/` e le pagine di `src/pages/diagrammi/`
-   (tranne `index.astro`).
+   (tranne `index.astro`). Adatta o svuota anche le pagine legate a tipi
+   dell'istanza di riferimento (`src/pages/simboli.astro`, l'atlante dei
+   simboli) se il tuo seme non ha un tipo corrispondente.
 2. **Genera le voci** da `kit/seme.json`: una `.md` per voce con frontmatter
    completo (id, titolo, tipo, parte, peso, sommario, periodo, alias, luoghi,
    archi, fonti) e un **corpo breve provvisorio** (2–4 frasi dal sommario +
@@ -88,21 +98,46 @@ Nell'ordine che ha funzionato per il caso di riferimento:
 5. **Home**: statistiche, porte e testi della home leggono già dai dati
    generati; verifica che i testi fissi non citino più il vecchio argomento.
 
-## 4 · Verifica, deploy, definizione di fatto
+## 4 · Verifica i contenuti (obbligatoria)
+
+I corpi si scrivono in lotti veloci: questa fase li ripassa da studioso, non
+da autore. Per **ogni voce di peso 4 e 5**:
+
+1. rileggi il corpo confrontandolo con le **fonti citate in calce** alla
+   voce e con il **sommario del seme**: ogni affermazione fattuale
+   (datazioni, attribuzioni, filiazioni, primati, numeri) deve essere
+   sostenuta da ciò che le fonti dicono davvero;
+2. **correggi** le affermazioni non sostenute: riscrivile, attenuale con
+   attribuzione esplicita («secondo X…»), o eliminale;
+3. tieni un **elenco delle affermazioni rimaste incerte** dopo il
+   controllo — quelle che non hai potuto né confermare né smentire con le
+   fonti a disposizione.
+
+Consegna all'utente l'elenco delle affermazioni incerte nel riepilogo
+finale: **le incertezze si dichiarano, non si silenziano** (è lo stesso
+principio del doppio registro del grafo, applicato alla prosa). Questa fase
+è processo di rilettura, non tooling: non servono strumenti nuovi.
+
+## 5 · Verifica tecnica, deploy, definizione di fatto
 
 - `npm test` · `npm run build` · `node scripts/verifica-bundle.mjs` ·
   `npx playwright test` (in locale con
   `PLAYWRIGHT_EXECUTABLE=/opt/pw-browsers/chromium` se l'ambiente lo
   richiede). Aggiorna le e2e dove citano titoli del vecchio argomento.
 - `npx tsx kit/estrai-seme.ts` deve rigenerare un seme equivalente a quello
-  di partenza (stessa struttura, stessi conteggi): è la prova che contenuto
-  e seme sono allineati. Aggiorna `kit/esempio/` col nuovo seme.
+  di partenza (le sezioni di progetto sono riprese da `kit/seme.json`; voci,
+  parti e percorsi dal contenuto reale — e le `parti` del contenuto devono
+  coincidere con quelle del seme). Aggiorna `kit/esempio/` col nuovo seme:
+  `npm run seme:controlla` è il check che gira in CI.
 - Screenshot di home (chiaro/scuro), un dossier voce, il grafo → all'utente.
 - CI verde sul branch; per pubblicare: GitHub Pages → Source "GitHub Actions"
   (impostazione che solo l'utente può attivare).
 
 **Fatto** significa: seme valido e allineato, zero voci col corpo
-provvisorio, tutte le suite verdi, budget bundle rispettato, screenshot
-consegnati. Se l'utente ha fissato un budget di tempo/token, la priorità è:
-base verde (fasi 0–2) > corpi di peso 5 e 4 > volume > resto dei corpi >
-diagrammi > blog.
+provvisorio, **verifica dei contenuti della fase 4 eseguita su tutte le voci
+di peso 4 e 5 con l'elenco delle affermazioni incerte consegnato**, tutte le
+suite verdi, budget bundle rispettato, screenshot consegnati. Se l'utente ha
+fissato un budget di tempo/token, la priorità è: base verde (fasi 0–2) >
+corpi di peso 5 e 4 > volume > resto dei corpi > diagrammi > blog — ma la
+fase 4 non si salta: vale per tutte le voci di peso 4 e 5 che hanno un corpo
+definitivo, qualunque sia il punto in cui ti fermi.

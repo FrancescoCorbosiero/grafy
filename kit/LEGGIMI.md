@@ -32,9 +32,11 @@ argomento + materiali            seme (JSON)                    sito
    datazioni, pesi a piramide).
 3. **Costruisci il sito** — sessione Claude Code su una copia di questo
    repository con il seme in `kit/seme.json` e `PROMPT-COSTRUISCI-SITO.md`
-   incollato: adatta il motore alla tassonomia, rigenera i contenuti, scrive
-   corpi/volume/diagrammi/blog nelle fasi collaudate, verifica tutto
-   (unit, e2e, budget) e pubblica.
+   incollato. Il motore è **seed-native**: la tassonomia non si adatta a
+   mano, la genera `npm run data` da `kit/seme.json` (codegen). Restano le
+   fasi collaudate di contenuto: rigenerare le voci, scrivere
+   corpi/volume/diagrammi/blog, verificare i corpi delle voci principali
+   contro le fonti, verificare tutto (unit, e2e, budget) e pubblicare.
 
 ## Cosa contiene il seme (e cosa no)
 
@@ -50,17 +52,19 @@ costruzione, dentro i guardrail del seme.
 
 | File | Ruolo |
 |---|---|
-| `AVVIO-NUOVO-REPO.md` | Come mettere la fabbrica su un repo nuovo e generare i progetti |
+| `seme.json` | **Il seme del progetto corrente**: la fonte da cui `npm run data` genera la tassonomia del motore (nella fabbrica è la copia del seme di riferimento) |
+| `AVVIO-NUOVO-REPO.md` | Come mettere la fabbrica su un repo nuovo, generare i progetti e tenerli aggiornati sul motore |
 | `SEME.schema.json` | Specifica formale del formato (JSON Schema draft-07) |
 | `valida-seme.ts` | Validatore: errori bloccanti + avvisi di qualità |
-| `estrai-seme.ts` | Estrae il seme **di questo sito** dal contenuto reale (`--verifica` per il check di allineamento in CI) |
+| `estrai-seme.ts` | Estrae il seme **di questo sito**: voci/parti/percorsi dal contenuto reale, sezioni di progetto riprese da `kit/seme.json` (`--verifica` per il check di allineamento in CI) |
 | `esempio/seme-esoterismo.json` | Il seme di questo sito, estratto e validato: riferimento vivo di formato e densità |
 | `semi/` | Semi pronti per nuovi progetti (`seme-informatica.json` — «Calculemus», 170 voci, validato senza avvisi) |
 | `PROMPT-GENERA-SEME.md` | Da argomento a seme (con la rubrica di validazione dell'argomento) |
 | `PROMPT-COSTRUISCI-SITO.md` | Da seme a sito, per Claude Code |
 
-Comandi: `npm run seme:estrai` · `npm run seme:valida` · `npm run seme:controlla`
-(quest'ultimo gira in CI: il seme di esempio non può divergere dal contenuto).
+Comandi: `npm run seme:estrai` · `npm run seme:valida` (valida `kit/seme.json`) ·
+`npm run seme:controlla` (gira in CI: seme di esempio allineato al contenuto e
+alle `parti` di `kit/seme.json`, poi validazione di `kit/seme.json`).
 
 ## Limiti onesti
 
