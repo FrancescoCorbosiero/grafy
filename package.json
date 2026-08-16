@@ -17,8 +17,8 @@
     "test:e2e": "playwright test",
     "check": "astro check",
     "seme:estrai": "tsx kit/estrai-seme.ts",
-    "seme:valida": "tsx kit/valida-seme.ts kit/esempio/seme-esoterismo.json",
-    "seme:controlla": "tsx kit/estrai-seme.ts --verifica && tsx kit/valida-seme.ts kit/esempio/seme-esoterismo.json"
+    "seme:valida": "tsx kit/valida-seme.ts kit/seme.json",
+    "seme:controlla": "tsx kit/estrai-seme.ts --verifica && tsx kit/valida-seme.ts kit/seme.json"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.0",
