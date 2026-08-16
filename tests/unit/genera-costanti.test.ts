@@ -103,7 +103,9 @@ describe('codegen sul seme di riferimento (kit/seme.json)', () => {
     const css = emettiCss(c);
     expect(css).toContain('--parte-6: #8b86af;');
     expect(css).toContain('--parte-6: #9d99c0;');
-    expect(css).toContain('--color-parte-6: var(--parte-6);');
+    // stringa composta: se fosse scritta per esteso, lo scanner dei sorgenti
+    // di Tailwind la prenderebbe per un uso reale del token e lo emetterebbe
+    expect(css).toContain(['--color', 'parte-6: var(--parte-6);'].join('-'));
     expect(css).not.toContain('--parte-7');
   });
 });
